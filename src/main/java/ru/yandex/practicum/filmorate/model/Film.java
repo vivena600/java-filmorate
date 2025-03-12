@@ -1,16 +1,29 @@
 package ru.yandex.practicum.filmorate.model;
 
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 import java.time.LocalDate;
 
 @Data
 public class Film {
+    private final static int MAXSIZEDESCRIPTION = 200;
+
     private Long id;
+
+    @NotNull(message = "У фильма должно быть название")
+    @NotBlank(message = "название не должно быть пустым")
     private String name;
+
+    @NotNull(message = "У фильма должно быть описание")
+    @NotBlank(message = "Описание фильма не может быть пустым")
+    @Size(min = 1, max = MAXSIZEDESCRIPTION, message = "Описание фильма не должно превышать " + MAXSIZEDESCRIPTION)
     private String description;
+
+    @NotNull
     private LocalDate releaseDate;
 
     @NotNull

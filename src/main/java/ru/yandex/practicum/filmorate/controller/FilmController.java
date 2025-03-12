@@ -14,7 +14,6 @@ import java.util.Map;
 @RestController
 @RequestMapping("/films")
 public class FilmController {
-    private static final int MAXLENDESCRIPTION = 200;
     private static final LocalDate MINREASEDATA = LocalDate.of(1895, 12, 28);
     private final Map<Long, Film> films = new HashMap<>();
 
@@ -24,27 +23,12 @@ public class FilmController {
     }
 
     @PostMapping
-    public Film postFilm(@Valid @RequestBody Film newfilm) {
-        if (newfilm.getName() == null || newfilm.getName().isBlank()) {
-            throw new ConditionNotMetException("Название фильма не может отсутсвовать");
-        }
-        if (newfilm.getDescription().length() > MAXLENDESCRIPTION) {
-            throw new ConditionNotMetException("Превышана максимальная длина описания фильма");
-        }
-        /*
-        if (newfilm.getDuration() < 0) {
-            throw  new ConditionNotMetException("Продолжительность фильма должна быть положительным числом");
-        }
+    public Film postFilm(@Valid @RequestBody Film newFilm) {
+        validatorReleaseDate(newFilm);
 
-         */
-
-        if (newfilm.getReleaseDate() == null || newfilm.getReleaseDate().isBefore(MINREASEDATA)) {
-            throw new ConditionNotMetException("Дата релиза должна быть не реньше " + MINREASEDATA);
-        }
-
-        newfilm.setId(getNextId());
-        films.put(newfilm.getId(), newfilm);
-        return newfilm;
+        newFilm.setId(getNextId());
+        films.put(newFilm.getId(), newFilm);
+        return newFilm;
     }
 
     @PutMapping
@@ -55,21 +39,7 @@ public class FilmController {
 
         if (films.containsKey(newFilm.getId())) {
             Film oldFilm = films.get(newFilm.getId());
-            if (newFilm.getName() == null || newFilm.getName().isBlank()) {
-                throw new ConditionNotMetException("Название фильма не может отсутсвовать");
-            }
-            if (newFilm.getDescription().length() > MAXLENDESCRIPTION) {
-                throw new ConditionNotMetException("Превышана максимальная длина описания фильма");
-            }
-            /*
-            if (newFilm.getDuration() < 0) {
-                throw  new ConditionNotMetException("Продолжительность фильма должна быть положительным числом");
-            }
-
-             */
-            if (newFilm.getReleaseDate() == null || newFilm.getReleaseDate().isBefore(MINREASEDATA)) {
-                throw new ConditionNotMetException("Дата релиза должна быть не реньше " + MINREASEDATA);
-            }
+            validatorReleaseDate(newFilm);
             oldFilm.setDescription(newFilm.getDescription());
             oldFilm.setName(newFilm.getName());
             oldFilm.setReleaseDate(newFilm.getReleaseDate());
@@ -87,5 +57,11 @@ public class FilmController {
                 .orElse(0);
         currentMaxId ++;
         return (long) currentMaxId;
+    }
+
+    private void validatorReleaseDate(Film newFilm) {
+        if (newFilm.getReleaseDate().isBefore(MINREASEDATA)) {
+            throw new ConditionNotMetException("Дата релиза должна быть не реньше " + MINREASEDATA);
+        }
     }
 }
