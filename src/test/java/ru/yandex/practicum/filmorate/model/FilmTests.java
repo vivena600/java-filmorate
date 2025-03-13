@@ -20,8 +20,8 @@ public class FilmTests {
 
     @BeforeEach
     public void startTest() {
-        film = Film.builder().
-                name("film name")
+        film = Film.builder()
+                .name("film name")
                 .duration(3)
                 .description("description film's")
                 .releaseDate(LocalDate.parse("2025-03-25"))

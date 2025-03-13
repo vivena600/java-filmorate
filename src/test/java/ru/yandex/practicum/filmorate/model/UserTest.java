@@ -20,8 +20,8 @@ public class UserTest {
 
     @BeforeEach
     public void startTest() {
-        user = User.builder().
-                name("film name")
+        user = User.builder()
+                .name("film name")
                 .email("test@email.ru")
                 .birthday(LocalDate.parse("2024-04-04"))
                 .login("login")
