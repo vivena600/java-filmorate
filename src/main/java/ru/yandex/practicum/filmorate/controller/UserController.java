@@ -24,7 +24,7 @@ public class UserController {
     }
 
     @PostMapping
-    public User postUser(@Valid @RequestBody User newUser) {
+    public User postUser(@Valid @RequestBody final User newUser) {
         log.debug("Запрос на добавление пользователя {}", newUser.toString());
         validator(newUser);
         newUser.setId(getNextId());
@@ -34,7 +34,7 @@ public class UserController {
     }
 
     @PutMapping
-    public User putUser(@Valid @RequestBody User newUser) {
+    public User putUser(@Valid @RequestBody final User newUser) {
         log.debug("Запрос на изменение данных о пользователе {}", newUser.toString());
         if (newUser.getId() == null) {
             log.trace("В запросе не бы указан id пользователя");
@@ -55,7 +55,7 @@ public class UserController {
         throw new NotFoundException("Пользователь с id " + newUser.getId() + " не был найден");
     }
 
-    private void validator(User newUser) {
+    private void validator(final User newUser) {
         if (newUser.getLogin().contains(" ")) {
             log.trace("Неправильный логин пользователя {}", newUser.getLogin());
             throw new ConditionNotMetException("Логин пользователя не может содержать пробелы");
@@ -72,7 +72,7 @@ public class UserController {
                 .mapToLong(id -> id)
                 .max()
                 .orElse(0);
-        currentMaxId ++;
+        currentMaxId++;
         return (long) currentMaxId;
     }
 }

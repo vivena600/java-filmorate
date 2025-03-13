@@ -25,7 +25,7 @@ public class FilmController {
     }
 
     @PostMapping
-    public Film postFilm(@Valid @RequestBody Film newFilm) {
+    public Film postFilm(@Valid @RequestBody final Film newFilm) {
         log.debug("Запрос на добавление фильма {}", newFilm.toString());
         validatorReleaseDate(newFilm);
 
@@ -36,7 +36,7 @@ public class FilmController {
     }
 
     @PutMapping
-    public Film putFilm(@Valid @RequestBody Film newFilm) {
+    public Film putFilm(@Valid @RequestBody final Film newFilm) {
         log.debug("Запрос на обнавление данных о фильме {}", newFilm.toString());
         if (newFilm.getId() == null) {
             log.trace("В запросе не указан id фильма {}", newFilm.toString());
@@ -54,7 +54,7 @@ public class FilmController {
             return oldFilm;
         }
         log.debug("Фильм с id {} не была найден", newFilm.getId());
-        throw new NotFoundException("Фильм с id " + newFilm.getId() +" не был найден");
+        throw new NotFoundException("Фильм с id " + newFilm.getId() + " не был найден");
     }
 
     private Long getNextId() {
@@ -63,11 +63,11 @@ public class FilmController {
                 .mapToLong(id -> id)
                 .max()
                 .orElse(0);
-        currentMaxId ++;
+        currentMaxId++;
         return (long) currentMaxId;
     }
 
-    private void validatorReleaseDate(Film newFilm) {
+    private void validatorReleaseDate(final Film newFilm) {
         if (newFilm.getReleaseDate().isBefore(MINREASEDATA)) {
             log.trace("Дата релиза {} раньше миниальной даты {}", newFilm, MINREASEDATA);
             throw new ConditionNotMetException("Дата релиза должна быть не реньше " + MINREASEDATA);
