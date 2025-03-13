@@ -26,15 +26,8 @@ public class FilmTests {
                 .description("description film's")
                 .releaseDate(LocalDate.parse("2025-03-25"))
                 .build();
-        System.out.println(film.getDuration());
-        controller = new FilmController();
         ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
         validator = factory.getValidator();
-    }
-
-    @Test
-    void getFilms() {
-
     }
 
     @Test
