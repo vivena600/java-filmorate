@@ -8,9 +8,7 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.exception.ConditionNotMetException;
 
 import java.time.LocalDate;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 @Slf4j
 @RestController
@@ -21,7 +19,7 @@ public class FilmController {
 
     @GetMapping
     public Collection<Film> getFilms() {
-        return films.values();
+        return List.copyOf(films.values());
     }
 
     @PostMapping

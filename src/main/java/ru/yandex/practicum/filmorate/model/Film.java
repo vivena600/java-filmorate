@@ -15,11 +15,9 @@ public class Film {
     private static final int MAX_SIZE_DESCRIPTION = 200;
     private Long id;
 
-    @NotNull(message = "У фильма должно быть название")
     @NotBlank(message = "название не должно быть пустым")
     private String name;
 
-    @NotNull(message = "У фильма должно быть описание")
     @NotBlank(message = "Описание фильма не может быть пустым")
     @Size(min = 1, max = MAX_SIZE_DESCRIPTION, message = "Описание фильма не должно превышать " + MAX_SIZE_DESCRIPTION)
     private String description;

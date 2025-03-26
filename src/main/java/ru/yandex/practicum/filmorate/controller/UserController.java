@@ -1,5 +1,7 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import lombok.extern.slf4j.Slf4j;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
@@ -9,6 +11,7 @@ import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Slf4j
@@ -20,7 +23,7 @@ public class UserController {
 
     @GetMapping
     public Collection<User> getUsers() {
-        return users.values();
+        return List.copyOf(users.values());
     }
 
     @PostMapping
