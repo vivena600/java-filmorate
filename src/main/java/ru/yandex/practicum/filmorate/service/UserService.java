@@ -88,7 +88,7 @@ public class UserService {
         User user = containsUser(userId);
         User friend = containsUser(friendId);
 
-        if(user.getFriends() == null || (user.getFriends().contains(friendId)
+        if (user.getFriends() == null || (user.getFriends().contains(friendId)
                 && friend.getFriends().contains(userId))) {
             user.deleteFriend(friendId);
             userStorage.updateUser(user);
