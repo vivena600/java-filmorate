@@ -20,18 +20,18 @@ public class InMemoryFilmStorage implements FilmStorage {
 
     @Override
     public Film createFilm(Film newFilm) {
-        log.debug("Запрос на добавление фильма {}", newFilm.toString());
+        log.info("Запрос на добавление фильма {}", newFilm.toString());
         validatorReleaseDate(newFilm);
 
         newFilm.setId(getNextId());
         films.put(newFilm.getId(), newFilm);
-        log.debug("Фильм добавлен {}", newFilm.toString());
+        log.debug("Фильм успешно добавлен {}", newFilm.toString());
         return newFilm;
     }
 
     @Override
     public void deleteFilm(Film film) {
-        log.debug("Запрос на удаление фильма - {}", film);
+        log.info("Запрос на удаление фильма - {}", film);
         if (getFilmById(film.getId()) != null) {
             films.remove(film.getId());
             log.debug("Фильм {} был удален", film);
@@ -40,9 +40,9 @@ public class InMemoryFilmStorage implements FilmStorage {
 
     @Override
     public Film update(Film filmUp) {
-        log.debug("Запрос на обнавление фильма: {}", filmUp.toString());
+        log.info("Запрос на обнавление фильма: {}", filmUp.toString());
         if (filmUp.getId() == null) {
-            log.trace("В запросе не указан id фильма {}", filmUp.toString());
+            log.warn("В запросе не указан id фильма {}", filmUp.toString());
             throw new ConditionNotMetException("Id не должен быть пустым");
         }
 
@@ -54,26 +54,31 @@ public class InMemoryFilmStorage implements FilmStorage {
         oldFilm.setReleaseDate(filmUp.getReleaseDate());
         oldFilm.setDuration(filmUp.getDuration());
         films.put(oldFilm.getId(), oldFilm);
+        log.debug("Обновленная информация о фильме: {}", oldFilm);
         return oldFilm;
     }
 
     @Override
     public Collection<Film> getFilms() {
+        log.info("Запрос на получение всех фильмов");
         return List.copyOf(films.values());
     }
 
     @Override
     public Film getFilmById(Long filmId) {
+        log.info("Запрос на получение фильма по id {}", filmId);
         if (!films.containsKey(filmId)) {
-            log.trace("Не удалось найти фильм по его id: {}", filmId);
+            log.warn("Не удалось найти фильм по его id: {}", filmId);
             throw new NotFoundException("Фильм с id: " + filmId + " не был найден");
         }
+        log.debug("Информация о фильме с id {} была успешно получена: {}", filmId, films.get(filmId));
         return films.get(filmId);
     }
 
     private void validatorReleaseDate(final Film newFilm) {
+        log.trace("Проверяем фильм на соответсвие даты релиза");
         if (newFilm.getReleaseDate().isBefore(MINREASEDATA)) {
-            log.trace("Дата релиза {} раньше миниальной даты {}", newFilm, MINREASEDATA);
+            log.warn("Дата релиза {} раньше миниальной даты {}", newFilm, MINREASEDATA);
             throw new ConditionNotMetException("Дата релиза должна быть не реньше " + MINREASEDATA);
         }
     }

@@ -30,19 +30,19 @@ public class FilmService {
         log.info("Запрос на получение {} популярных фильмов", count);
         int newCount = count;
         if (newCount < 0) {
+            log.warn("Количество фильмов в запросе {} не может быть отрицательным числом", count);
             throw new ConditionNotMetException("Количество элементов не может быть отрицательным числом");
         }
         Collection<Film> sortFilmList = sortFilms();
-        log.info("количество фильмов в базе: {} количество count: {}", sortFilmList.size(), count);
         if (count > sortFilmList.size()) {
             newCount = sortFilmList.size();
         }
         log.trace("Введеное count больше количества фильмов, count изменен на {}", newCount);
-        log.trace("Отсортированные списки : {}", sortFilmList);
         return sortFilmList.stream().toList().subList(0, newCount);
     }
 
     public Film getFilmById(Long id) {
+        log.info("Запрос на полученнние информации о фильме с id {}", id);
         return containsFilm(id);
     }
 
@@ -69,9 +69,11 @@ public class FilmService {
         User user = userStorage.getUserById(userId);
         film.removeLike(userId);
         filmStorage.update(film);
+        log.debug("Пользователь {} успешно удалил лайк фильму с id {}", userId, filmId);
     }
 
     private Film containsFilm(Long filmId) {
+        log.trace("Проверка информации о фильме с id {}", filmId);
         Film film = filmStorage.getFilmById(filmId);
         if (film == null) {
             log.debug("Фильм с id {} не был найден", filmId);
@@ -82,7 +84,7 @@ public class FilmService {
 
     private Collection<Film> sortFilms() {
         Collection<Film> films = List.copyOf(filmStorage.getFilms());
-        log.info("Сортировка фильмов по количеству лайков {}", films);
+        log.trace("Сортировка фильмов по количеству лайков {}", films);
         return films.stream()
                 .sorted(Comparator.comparing((Film film) -> film.getLikes() == null ? 0 : film.getLikes().size())
                         .reversed())

@@ -13,19 +13,19 @@ public class ErrorHandler {
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public Map<String, String> handlerNotFound(final NotFoundException ex){
+    public Map<String, String> handlerNotFound(final NotFoundException ex) {
         return Map.of("NotFound", ex.getMessage());
     }
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public Map<String, String> handlerValidation(final ValidationException ex){
+    public Map<String, String> handlerValidation(final ValidationException ex) {
         return Map.of("Ошибка валидации", ex.getMessage());
     }
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public Map<String, String> handlerServer(final RuntimeException ex){
+    public Map<String, String> handlerServer(final RuntimeException ex) {
         return Map.of("Ошибка валидации", ex.getMessage());
     }
 }
