@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.ConditionNotMetException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
@@ -56,6 +57,7 @@ public class FilmService {
     public void addLike(Long filmId, Long userId) {
         log.info("Запрос пользователя с id: {} поставить лайк фильму с id {}", userId, filmId);
         Film film = containsFilm(filmId);
+        User user = userStorage.getUserById(userId);
         film.addLike(userId);
         filmStorage.update(film);
         log.debug("Пользователь {} успешно поставил лайк фильму с id {}", userId, filmId);
@@ -64,6 +66,7 @@ public class FilmService {
     public void removeLike(Long filmId, Long userId) {
         log.info("Запрос пользователя с id: {} удалить лайк фильму с id {}", userId, filmId);
         Film film = containsFilm(filmId);
+        User user = userStorage.getUserById(userId);
         film.removeLike(userId);
         filmStorage.update(film);
     }
@@ -72,7 +75,7 @@ public class FilmService {
         Film film = filmStorage.getFilmById(filmId);
         if (film == null) {
             log.debug("Фильм с id {} не был найден", filmId);
-            throw new NotFoundException("Филь с id " + filmId + " не был найден");
+            throw new NotFoundException("Фильм с id " + filmId + " не был найден");
         }
         return film;
     }
@@ -81,7 +84,8 @@ public class FilmService {
         Collection<Film> films = List.copyOf(filmStorage.getFilms());
         log.info("Сортировка фильмов по количеству лайков {}", films);
         return films.stream()
-                .sorted(Comparator.comparing(film -> film.getLikes() == null ? 0 : film.getLikes().size()))
+                .sorted(Comparator.comparing((Film film) -> film.getLikes() == null ? 0 : film.getLikes().size())
+                        .reversed())
                 .collect(Collectors.toList());
     }
 }

@@ -18,7 +18,7 @@ import java.util.Set;
 @AllArgsConstructor
 @Builder(toBuilder = true)
 @Data
-public class User extends {
+public class User {
     private Long id;
     private Set<Long> friends;
 
