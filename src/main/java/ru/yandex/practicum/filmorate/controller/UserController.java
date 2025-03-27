@@ -1,81 +1,61 @@
 package ru.yandex.practicum.filmorate.controller;
 
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exception.ConditionNotMetException;
-import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.UserService;
 
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 @Slf4j
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/users")
 public class UserController {
 
-    private final Map<Long, User> users = new HashMap<>();
+    private final UserService userService;
 
     @GetMapping
     public Collection<User> getUsers() {
-        return List.copyOf(users.values());
+        return userService.getUsers();
+    }
+
+    @GetMapping("{id}")
+    public User getUserByID(@PathVariable Long id) {
+        return userService.getUserById(id);
+    }
+
+    @GetMapping("/{id}/friends")
+    public Collection<User> getFriends(@PathVariable final Long id) {
+        return userService.getFriends(id);
+    }
+
+    @GetMapping("/{id}/friends/common/{otherId}")
+    public Collection<User> getCommonFrends(@PathVariable final Long id, @PathVariable final Long otherId) {
+        return userService.retainFriends(id, otherId);
     }
 
     @PostMapping
     public User postUser(@Valid @RequestBody final User newUser) {
-        log.debug("Запрос на добавление пользователя {}", newUser.toString());
-        validator(newUser);
-        newUser.setId(getNextId());
-        users.put(newUser.getId(), newUser);
-        log.debug("Пользователь зарегестрировался {}", newUser.toString());
-        return newUser;
+        return userService.createUser(newUser);
     }
 
     @PutMapping
-    public User putUser(@Valid @RequestBody final User newUser) {
-        log.debug("Запрос на изменение данных о пользователе {}", newUser.toString());
-        if (newUser.getId() == null) {
-            log.trace("В запросе не бы указан id пользователя");
-            throw new ConditionNotMetException("В запросе на обновление не указан id");
-        }
-
-        if (users.containsKey(newUser.getId())) {
-            validator(newUser);
-            User oldUser = users.get(newUser.getId());
-            log.trace("Пользователь чьи данные будем обнавлять {}", oldUser);
-            oldUser.setName(newUser.getName());
-            oldUser.setLogin(newUser.getLogin());
-            oldUser.setEmail(newUser.getEmail());
-            oldUser.setBirthday(newUser.getBirthday());
-            return oldUser;
-        }
-        log.debug("Пользователь с id {} не был найден. Не удалось осуществить запрос: {}", newUser.getId(), newUser.toString());
-        throw new NotFoundException("Пользователь с id " + newUser.getId() + " не был найден");
+    public User putUser(@Valid @RequestBody final User userUp) {
+        return userService.updateUser(userUp);
     }
 
-    private void validator(final User newUser) {
-        if (newUser.getLogin().contains(" ")) {
-            log.trace("Неправильный логин пользователя {}", newUser.getLogin());
-            throw new ConditionNotMetException("Логин пользователя не может содержать пробелы");
-        }
-        if (newUser.getName() == null) {
-            log.trace("В запросе не было имени пользователя, поэтому запишем логин");
-            newUser.setName(newUser.getLogin());
-        }
+    @PutMapping("{id}/friends/{friendId}")
+    public void addFriends(@PathVariable final Long id,
+            @PathVariable final Long friendId) {
+        userService.addFriend(id, friendId);
     }
 
-    private Long getNextId() {
-        int currentMaxId = (int) users.keySet()
-                .stream()
-                .mapToLong(id -> id)
-                .max()
-                .orElse(0);
-        currentMaxId++;
-        return (long) currentMaxId;
+    @DeleteMapping("{id}/friends/{friendId}")
+    public void deleteFriends(@PathVariable final Long id,
+                              @PathVariable final Long friendId) {
+        userService.deleteFriend(id, friendId);
     }
 }

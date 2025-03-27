@@ -1,7 +1,9 @@
 package ru.yandex.practicum.filmorate.exception;
 
 
-public class ConditionNotMetException extends RuntimeException {
+import jakarta.validation.ValidationException;
+
+public class ConditionNotMetException extends ValidationException {
 
     public  ConditionNotMetException(final String message) {
         super(message);
