@@ -29,10 +29,6 @@ public class FilmService {
     public Collection<Film> getPopularFilms(int count) {
         log.info("Запрос на получение {} популярных фильмов", count);
         int newCount = count;
-        if (newCount < 0) {
-            log.warn("Количество фильмов в запросе {} не может быть отрицательным числом", count);
-            throw new ConditionNotMetException("Количество элементов не может быть отрицательным числом");
-        }
         Collection<Film> sortFilmList = sortFilms();
         if (count > sortFilmList.size()) {
             newCount = sortFilmList.size();
