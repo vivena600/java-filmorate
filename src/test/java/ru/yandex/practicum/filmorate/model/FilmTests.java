@@ -4,6 +4,7 @@ import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.ValidatorFactory;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import ru.yandex.practicum.filmorate.controller.FilmController;
 import jakarta.validation.Validator;
@@ -30,12 +31,14 @@ public class FilmTests {
         validator = factory.getValidator();
     }
 
+    @DisplayName("Добавление нового фильма")
     @Test
     void createFilm() {
         Set<ConstraintViolation<Film>> violations = validator.validate(film);
         assertTrue(violations.isEmpty(), "Программа увидела ошибку, которой не должно быть");
     }
 
+    @DisplayName("Добавление фильма с неправильнам Duration")
     @Test
     void createFilmWithFailDuration() {
         Film newfilm = film.toBuilder()
@@ -46,6 +49,7 @@ public class FilmTests {
                 "продолжительностью фильма");
     }
 
+    @DisplayName("Добавление фильма с некорректным описанием")
     @Test
     void createFilmWithFailDescription() {
         Film newfilm = film.toBuilder()
@@ -63,6 +67,7 @@ public class FilmTests {
                 "описания фильма");
     }
 
+    @DisplayName("Добавление фильма с некорректным названием")
     @Test
     void createFilmWithFailName() {
         Film newfilm = film.toBuilder()

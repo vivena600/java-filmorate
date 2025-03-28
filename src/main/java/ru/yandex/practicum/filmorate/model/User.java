@@ -4,22 +4,24 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Past;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 
+@AllArgsConstructor
 @Builder(toBuilder = true)
 @Data
 public class User {
     private Long id;
+    private Set<Long> friends;
 
-    @NotNull
     @NotBlank
     @Email
     private  String email;
 
-    @NotNull
     @NotBlank
     private String login;
 
@@ -28,4 +30,18 @@ public class User {
     @NotNull
     @Past
     private LocalDate birthday;
+
+    public void addFriend(Long friendId) {
+        if (friends == null) {
+            friends = new HashSet<>();
+        }
+        friends.add(friendId);
+    }
+
+    public void deleteFriend(Long friendId) {
+        if (friends == null) {
+            friends = new HashSet<>();
+        }
+        friends.remove(friendId);
+    }
 }
