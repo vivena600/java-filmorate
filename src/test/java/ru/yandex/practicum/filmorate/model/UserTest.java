@@ -4,6 +4,7 @@ import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.ValidatorFactory;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import ru.yandex.practicum.filmorate.controller.FilmController;
 import jakarta.validation.Validator;
@@ -30,14 +31,16 @@ public class UserTest {
         validator = factory.getValidator();
     }
 
+    @DisplayName("Создание пользователя")
     @Test
-    void createFilm() {
+    void createUser() {
         Set<ConstraintViolation<User>> violations = validator.validate(user);
         assertTrue(violations.isEmpty(), "Программа увидела ошибку, которой не должно быть");
     }
 
+    @DisplayName("Создание пользователя с некорректной датой рождения")
     @Test
-    void createFilmWithFailBirthday() {
+    void createUserWithFailBirthday() {
         User newUser = user.toBuilder()
                 .birthday(LocalDate.now())
                 .build();
@@ -46,8 +49,9 @@ public class UserTest {
                 " рождения пользователя");
     }
 
+    @DisplayName("Создание пользователя с некорректной почтой")
     @Test
-    void createFilmWithFailEmail() {
+    void createUserWithFailEmail() {
         User newUser = user.toBuilder()
                 .email("")
                 .build();
@@ -58,12 +62,13 @@ public class UserTest {
                 .email("fail email")
                 .build();
         Set<ConstraintViolation<User>> violations2 = validator.validate(newUser2);
-        assertFalse(violations2.isEmpty(), "Программа не увидела ошибку, связанную с записью пустого " +
-                "описания фильма");
+        assertFalse(violations2.isEmpty(), "Программа не увидела ошибку, связанную с записью пустым " +
+                "адресом электронной почтой");
     }
 
+    @DisplayName("Создание пользователя с некорректным логином")
     @Test
-    void createFilmWithFailLogin() {
+    void createUserWithFailLogin() {
         User newUser = user.toBuilder()
                 .login(null)
                 .build();
