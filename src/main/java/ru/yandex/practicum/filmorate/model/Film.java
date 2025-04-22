@@ -9,6 +9,7 @@ import lombok.Data;
 
 import java.time.LocalDate;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Builder(toBuilder = true)
@@ -17,6 +18,8 @@ public class Film {
     private static final int MAX_SIZE_DESCRIPTION = 200;
     private Long id;
     private Set<Long> likes;
+    private int ratingId;
+    private Set<Genre> generes;
 
     @NotBlank(message = "название не должно быть пустым")
     private String name;
