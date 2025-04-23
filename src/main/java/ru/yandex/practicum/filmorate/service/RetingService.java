@@ -5,7 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.Reting;
-import ru.yandex.practicum.filmorate.storage.rating.DbRetingStorage;
+import ru.yandex.practicum.filmorate.storage.DbRetingStorage;
 
 import java.util.Collection;
 
