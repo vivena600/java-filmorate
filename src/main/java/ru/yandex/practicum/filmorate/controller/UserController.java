@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.dto.UserDto;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
 
@@ -17,10 +18,17 @@ public class UserController {
 
     private final UserService userService;
 
+    @PostMapping
+    public User postUser(@Valid @RequestBody final UserDto newUser) {
+        return userService.createUser(newUser);
+    }
+
     @GetMapping
     public Collection<User> getUsers() {
         return userService.getUsers();
     }
+
+    /*
 
     @GetMapping("{id}")
     public User getUserByID(@PathVariable Long id) {
@@ -37,10 +45,9 @@ public class UserController {
         return userService.retainFriends(id, otherId);
     }
 
-    @PostMapping
-    public User postUser(@Valid @RequestBody final User newUser) {
-        return userService.createUser(newUser);
-    }
+     */
+
+    /*
 
     @PutMapping
     public User putUser(@Valid @RequestBody final User userUp) {
@@ -58,4 +65,6 @@ public class UserController {
                               @PathVariable final Long friendId) {
         userService.deleteFriend(id, friendId);
     }
+
+     */
 }

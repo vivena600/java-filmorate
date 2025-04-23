@@ -12,8 +12,8 @@ import java.util.Set;
 public class UserDto {
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Long id;
-    private Set<Long> friends;
-    private  String email;
+    private String email;
     private String name;
+    private String login;
     private LocalDate birthday;
 }

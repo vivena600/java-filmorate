@@ -4,8 +4,10 @@ import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.dto.UserDto;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.user.DbUserStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.util.Collection;
@@ -17,11 +19,16 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class UserService {
     private static final Logger log = LoggerFactory.getLogger(UserService.class);
-    private final UserStorage userStorage;
+    private final DbUserStorage userStorage;
+
+    public User createUser(UserDto newUser) {
+        return userStorage.createUser(newUser);
+    }
 
     public Collection<User> getUsers() {
         return userStorage.getUsers();
     }
+    /*
 
     public User getUserById(Long id) {
         return containsUser(id);
@@ -62,10 +69,9 @@ public class UserService {
         return retFrends;
     }
 
-    public User createUser(User newUser) {
-        return userStorage.createUser(newUser);
-    }
+     */
 
+    /*
     public User updateUser(User userUp) {
         return userStorage.updateUser(userUp);
     }
@@ -109,4 +115,6 @@ public class UserService {
         }
         return userStorage.getUserById(userId);
     }
+
+     */
 }
