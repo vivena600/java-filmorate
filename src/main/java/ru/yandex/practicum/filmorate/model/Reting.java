@@ -1,14 +1,15 @@
 package ru.yandex.practicum.filmorate.model;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
-import ru.yandex.practicum.filmorate.enums.RatingType;
 
 @Getter
 @Setter
 @AllArgsConstructor
-public class Rating {
+@Builder
+public class Reting {
     private int id;
-    private RatingType name;
+    private String name;
 }

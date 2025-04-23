@@ -60,13 +60,6 @@ public class DbUserStorage implements UserStorage {
     @Override
     public User updateUser(UserDto userUp) {
         log.info("Запрос на изменение данных о пользователе {}", userUp.toString());
-        /*
-        if (userUp.getId() == null) {
-            log.warn("В запросе не бы указан id пользователя");
-            throw new ConditionNotMetException("В запросе на обновление не указан id");
-        }
-
-         */
         if (!checkUserId(userUp.getId())) {
             log.error("Не удалось найти пользователя по его id: {}", userUp.getId());
             throw new NotFoundException("Пользователь с id: " + userUp.getId() + " не был найден");
@@ -79,7 +72,7 @@ public class DbUserStorage implements UserStorage {
 
     @Override
     public User getUserById(Long userId) {
-        log.info("Запрос на полученнние информации о пользователе с id {}", userId);
+        log.info("Запрос на получение информации о пользователе с id {}", userId);
         if (userId == null) {
             log.error("В запросе не бы указан id пользователя");
             throw new ConditionNotMetException("В запросе на обновление не указан id");
@@ -95,7 +88,7 @@ public class DbUserStorage implements UserStorage {
 
     @Override
     public Collection<User> getUsers() {
-        log.info("Запрос на полученнние информации о всех пользователей");
+        log.info("Запрос на получение информации о всех пользователей");
         String query = "SELECT * FROM users";
         return jdbcTemplate.query(query, new UserRowMapper());
     }
