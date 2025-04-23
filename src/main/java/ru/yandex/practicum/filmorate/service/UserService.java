@@ -28,12 +28,16 @@ public class UserService {
     public Collection<User> getUsers() {
         return userStorage.getUsers();
     }
-    /*
 
     public User getUserById(Long id) {
-        return containsUser(id);
+        return userStorage.getUserById(id);
     }
 
+    public User updateUser(UserDto userUp) {
+        return userStorage.updateUser(userUp);
+    }
+
+    /*
     public Collection<User> getFriends(Long id) {
         log.info("Получение списка друзей пользователя c id {}", id);
         User user = containsUser(id);
@@ -69,12 +73,7 @@ public class UserService {
         return retFrends;
     }
 
-     */
 
-    /*
-    public User updateUser(User userUp) {
-        return userStorage.updateUser(userUp);
-    }
 
     public void addFriend(Long userId, Long friendId) {
         log.info("Запрос на добавление пользователй с id {} и {} друг к другу в друзья", userId, friendId);

@@ -28,12 +28,18 @@ public class UserController {
         return userService.getUsers();
     }
 
-    /*
 
     @GetMapping("{id}")
     public User getUserByID(@PathVariable Long id) {
         return userService.getUserById(id);
     }
+
+    @PutMapping
+    public User putUser(@Valid @RequestBody final UserDto userUp) {
+        return userService.updateUser(userUp);
+    }
+
+    /*
 
     @GetMapping("/{id}/friends")
     public Collection<User> getFriends(@PathVariable final Long id) {
@@ -45,14 +51,6 @@ public class UserController {
         return userService.retainFriends(id, otherId);
     }
 
-     */
-
-    /*
-
-    @PutMapping
-    public User putUser(@Valid @RequestBody final User userUp) {
-        return userService.updateUser(userUp);
-    }
 
     @PutMapping("{id}/friends/{friendId}")
     public void addFriends(@PathVariable final Long id,

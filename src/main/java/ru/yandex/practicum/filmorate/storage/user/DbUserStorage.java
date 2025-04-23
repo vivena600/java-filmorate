@@ -9,6 +9,8 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.dto.UserDto;
+import ru.yandex.practicum.filmorate.exception.ConditionNotMetException;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.mapper.UserMapper;
 import ru.yandex.practicum.filmorate.mapper.UserRowMapper;
 import ru.yandex.practicum.filmorate.model.User;
@@ -28,6 +30,7 @@ public class DbUserStorage implements UserStorage {
 
     @Override
     public User createUser(UserDto newUser) {
+        log.info("Запрос создание пользователя {}", newUser);
         String query = "INSERT INTO users (name, login, email, birthday) VALUES (?, ?, ?, ?)";
         KeyHolder generatedKeys = new GeneratedKeyHolder();
 
@@ -55,18 +58,39 @@ public class DbUserStorage implements UserStorage {
 
 
     @Override
-    public void deleteUser(UserDto user) {
-
-    }
-
-    @Override
     public User updateUser(UserDto userUp) {
-        return null;
+        log.info("Запрос на изменение данных о пользователе {}", userUp.toString());
+        /*
+        if (userUp.getId() == null) {
+            log.warn("В запросе не бы указан id пользователя");
+            throw new ConditionNotMetException("В запросе на обновление не указан id");
+        }
+
+         */
+        if (!checkUserId(userUp.getId())) {
+            log.error("Не удалось найти пользователя по его id: {}", userUp.getId());
+            throw new NotFoundException("Пользователь с id: " + userUp.getId() + " не был найден");
+        }
+        String query = "UPDATE users SET name = ?, login = ?, email = ?, birthday = ? WHERE id = ?";
+        jdbcTemplate.update(query, userUp.getName(), userUp.getLogin(), userUp.getEmail(),
+                Date.valueOf(userUp.getBirthday()), userUp.getId());
+        return userMapper.mapToUser(userUp);
     }
 
     @Override
     public User getUserById(Long userId) {
-        return null;
+        log.info("Запрос на полученнние информации о пользователе с id {}", userId);
+        if (userId == null) {
+            log.error("В запросе не бы указан id пользователя");
+            throw new ConditionNotMetException("В запросе на обновление не указан id");
+        }
+        String query = "SELECT * FROM users WHERE id = ?";
+        List<User> users = jdbcTemplate.query(query, new UserRowMapper(), userId);
+        if (users.size() < 1) {
+            log.error("Не удалось найти пользователя по его id: {}", userId);
+            throw new NotFoundException("Пользователь с id: " + userId + " не был найден");
+        }
+        return users.get(0);
     }
 
     @Override
@@ -74,5 +98,15 @@ public class DbUserStorage implements UserStorage {
         log.info("Запрос на полученнние информации о всех пользователей");
         String query = "SELECT * FROM users";
         return jdbcTemplate.query(query, new UserRowMapper());
+    }
+
+    public Boolean checkUserId(long userId) {
+        String query = "SELECT * FROM users WHERE id = ?";
+        List<User> users = jdbcTemplate.query(query, new UserRowMapper(), userId);
+        if (users.size() < 1) {
+            log.debug("Пользователь с id {} не был найден", userId);
+            return false;
+        }
+        return true;
     }
 }
