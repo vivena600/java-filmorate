@@ -21,12 +21,12 @@ public class FilmController {
         return filmService.addFilm(newFilm);
     }
 
-    /*
-
     @GetMapping
     public Collection<Film> getFilms() {
         return filmService.getFilms();
     }
+
+    /*
 
     @GetMapping("{id}")
     public Film getFilmById(@PathVariable final Long id) {

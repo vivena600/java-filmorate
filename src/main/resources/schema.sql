@@ -44,5 +44,5 @@ CREATE TABLE IF NOT EXISTS status (
     CREATE TABLE IF NOT EXISTS frendship (
     user_id INTEGER REFERENCES users(id),
     frends_id INTEGER REFERENCES users(id),
-    status_id INTEGER references status(status_id)
+    status VARCHAR(20)
 );

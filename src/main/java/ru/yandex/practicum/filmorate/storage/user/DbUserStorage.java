@@ -93,6 +93,28 @@ public class DbUserStorage implements UserStorage {
         return jdbcTemplate.query(query, new UserRowMapper());
     }
 
+    @Override
+    public Collection<User> getFrends(Long userId) {
+        return List.of();
+    }
+
+    @Override
+    public Collection<User> getCommonFrends(Long userId, Long frendId) {
+        return List.of();
+    }
+
+    @Override
+    public void addFrend(Long userId, Long frendId) {
+        checkUserId(userId);
+        checkUserId(frendId);
+        String query = "INSERT INTO frendship (user_id, frends_id, status_id) VALUES (?, ?, ?)";
+    }
+
+    @Override
+    public void removeFrend(Long userId, Long frendId) {
+
+    }
+
     public Boolean checkUserId(long userId) {
         String query = "SELECT * FROM users WHERE id = ?";
         List<User> users = jdbcTemplate.query(query, new UserRowMapper(), userId);

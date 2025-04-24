@@ -10,7 +10,9 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.dto.FilmDto;
 import ru.yandex.practicum.filmorate.exception.ConditionNotMetException;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.mapper.FilmMapper;
+import ru.yandex.practicum.filmorate.mapper.FilmRowMapper;
 import ru.yandex.practicum.filmorate.mapper.RatingRowMapper;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
@@ -62,8 +64,9 @@ public class DbFilmStorage implements FilmStorage {
             long id = keyHolder.getKey().longValue();
             newFilm.setId(id);
             newFilm.setMpa(mpa);
-            if (newFilm.getGenres() == null && newFilm.getGenres().isEmpty())
-            setGenres(newFilm);
+            if (newFilm.getGenres() == null && newFilm.getGenres().isEmpty()) {
+                setGenres(newFilm);
+            }
             return mapper.mapToFilm(newFilm);
         } catch (DataAccessException ex) {
             log.error("ошибка при создании фильма {}", ex.getMessage());
@@ -85,12 +88,44 @@ public class DbFilmStorage implements FilmStorage {
     public Collection<Film> getFilms() {
         //select from films join MPA + select genres + select from film_genres
         // + Объединить
-        return List.of();
+        log.info("Запрос на получение информации о всех фильмах");
+        String query = "SELECT f.name,\n" +
+                "       f.description,\n" +
+                "       f.release_date,\n" +
+                "       f.DURATION,\n" +
+                "       m.name,\n" +
+                "       g.name\n" +
+                "FROM films AS f\n" +
+                "LEFT JOIN mpa AS m ON f.mpa_id = m.mpa_id\n" +
+                "LEFT JOIN films_genre AS fg ON f.id = fg.film_id\n" +
+                "LEFT JOIN genres AS g ON fg.genre_id = g.genre_id";
+        return jdbcTemplate.query(query, new FilmRowMapper());
     }
 
     @Override
     public Film getFilmById(Long filmId) {
-        return null;
+        log.info("Запрос на получение информации о всех пользователе с id {}", filmId);
+        if (filmId == null) {
+            log.error("В запросе не бы указан id пользователя");
+            throw new ConditionNotMetException("В запросе на обновление не указан id");
+        }
+        String query = "SELECT f.name,\n" +
+                "       f.description,\n" +
+                "       f.release_date,\n" +
+                "       f.DURATION,\n" +
+                "       m.name,\n" +
+                "       g.name\n" +
+                "FROM films AS f\n" +
+                "LEFT JOIN mpa AS m ON f.mpa_id = m.mpa_id\n" +
+                "LEFT JOIN films_genre AS fg ON f.id = fg.film_id\n" +
+                "LEFT JOIN genres AS g ON fg.genre_id = g.genre_id\n" +
+                "WHERE f.id = ?";
+        List<Film> films = jdbcTemplate.query(query, new FilmRowMapper(), filmId);
+        if (films.size() < 1) {
+            log.error("Не удалось найти пользователя по его id: {}", filmId);
+            throw new NotFoundException("Пользователь с id: " + filmId + " не был найден");
+        }
+        return films.getFirst();
     }
 
     private void setGenres(FilmDto film) {
@@ -98,13 +133,13 @@ public class DbFilmStorage implements FilmStorage {
 
         Set<Genre> genres = new HashSet<>();
         for (Genre genre : film.getGenres()) {
-            if (dbGenres.getGenreById(genre.getGenere_id()) != null) {
+            if ( genre.getGenere_id() != 0 && dbGenres.getGenreById(genre.getGenere_id()) != null) {
                 genres.add(genre);
             }
         }
 
         long filmId = film.getId();
-        log.info("Запрос на добаление жанров {} фильма с id {}", genres.toString(), filmId);
+        log.info("Запрос на добавление жанров {} фильма с id {}", genres.toString(), filmId);
         String sql = "INSERT INTO films_genre (genre_id, film_id) VALUES (?, ?)";
         List<Object[]> params = genres.stream()
                 .map(genre -> new Object[] { genre.getGenere_id(), filmId })
@@ -124,10 +159,10 @@ public class DbFilmStorage implements FilmStorage {
     }
 
     private void validatorReleaseDate(final FilmDto newFilm) {
-        log.trace("Проверяем фильм на соответсвие даты релиза");
+        log.trace("Проверяем фильм на соответствие даты релиза");
         if (newFilm.getReleaseDate().isBefore(MINREASEDATA)) {
-            log.warn("Дата релиза {} раньше миниальной даты {}", newFilm, MINREASEDATA);
-            throw new ConditionNotMetException("Дата релиза должна быть не реньше " + MINREASEDATA);
+            log.warn("Дата релиза {} раньше минимальной даты {}", newFilm, MINREASEDATA);
+            throw new ConditionNotMetException("Дата релиза должна быть не раньше " + MINREASEDATA);
         }
     }
 }

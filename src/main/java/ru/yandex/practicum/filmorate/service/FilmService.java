@@ -25,11 +25,12 @@ public class FilmService {
     public Film addFilm(FilmDto newFilm) {
         return filmStorage.createFilm(newFilm);
     }
-    /*
 
     public Collection<Film> getFilms() {
         return filmStorage.getFilms();
     }
+    /*
+
 
     public Collection<Film> getPopularFilms(int count) {
         log.info("Запрос на получение {} популярных фильмов", count);
