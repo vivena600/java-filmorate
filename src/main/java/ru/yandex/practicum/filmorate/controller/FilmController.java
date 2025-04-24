@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.dto.FilmDto;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
@@ -14,6 +15,13 @@ import java.util.*;
 @RequestMapping("/films")
 public class FilmController {
     private final FilmService filmService;
+
+    @PostMapping
+    public Film postFilm(@Valid @RequestBody final FilmDto newFilm) {
+        return filmService.addFilm(newFilm);
+    }
+
+    /*
 
     @GetMapping
     public Collection<Film> getFilms() {
@@ -30,11 +38,6 @@ public class FilmController {
         return filmService.getPopularFilms(count);
     }
 
-    @PostMapping
-    public Film postFilm(@Valid @RequestBody final Film newFilm) {
-        return filmService.addFilm(newFilm);
-    }
-
     @PutMapping
     public Film putFilm(@Valid @RequestBody final Film newFilm) {
         return filmService.updateFilm(newFilm);
@@ -49,4 +52,6 @@ public class FilmController {
     public void removeLikes(@PathVariable final Long id, @PathVariable final Long userId) {
         filmService.removeLike(id, userId);
     }
+
+     */
 }

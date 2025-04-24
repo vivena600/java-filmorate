@@ -19,18 +19,24 @@ public class DbGeneres {
 
     public Collection<Genre> getGenres() {
         log.info("Запрос на получение информации о жанрах");
-        String query = "SELECT * FROM GENRES ORDER BY genres_id;";
+        String query = "SELECT * FROM genres;";
         return jdbcTemplate.query(query, new GenreRowMapper());
     }
 
     public Genre getGenreById(int id) {
         log.info("Запрос на получение информации о жанре с id {}", id);
-        String query = "SELECT * FROM GENRES WHERE genres_id = ?;";
+        String query = "SELECT * FROM genres WHERE genre_id = ?;";
         List<Genre> genres = jdbcTemplate.query(query, new GenreRowMapper(), id);
         if (genres.isEmpty()) {
             log.debug("жанр с id {} не был найден", id);
             throw new NotFoundException("Жанр с id: " + id + " не был найден");
         }
         return genres.getFirst();
+    }
+
+    public Collection<Genre> getFilmGenres(long filmId) {
+        String query = "SELECT * FROM genres WHERE genres_id IN (SELECT genre_id FROM films_genre WHERE = ?);";
+
+        return jdbcTemplate.query(query, new GenreRowMapper(), filmId);
     }
 }

@@ -6,10 +6,9 @@ import jakarta.validation.constraints.Size;
 import jakarta.validation.constraints.Positive;
 import lombok.Builder;
 import lombok.Data;
+import ru.yandex.practicum.filmorate.dto.RatingDto;
 
 import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 @Builder(toBuilder = true)
@@ -17,9 +16,9 @@ import java.util.Set;
 public class Film {
     private static final int MAX_SIZE_DESCRIPTION = 200;
     private Long id;
-    private Set<Long> likes;
-    private int ratingId;
-    private Set<Genre> generes;
+   // private Set<Long> likes;
+    private Reting mpa;
+    private Set<Genre> genres;
 
     @NotBlank(message = "название не должно быть пустым")
     private String name;
@@ -35,6 +34,8 @@ public class Film {
     @Positive(message = "Продолжительность фильма должна быть положительным числом")
     private int duration;
 
+    /*
+
     public void addLike(Long userId) {
         if (likes == null) {
             likes = new HashSet<>();
@@ -48,4 +49,6 @@ public class Film {
         }
         likes.add(userId);
     }
+
+     */
 }

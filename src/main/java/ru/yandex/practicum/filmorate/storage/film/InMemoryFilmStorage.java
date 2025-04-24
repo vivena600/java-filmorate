@@ -11,7 +11,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
+/*
 @Component
 @Slf4j
 public class InMemoryFilmStorage implements FilmStorage {
@@ -93,3 +93,5 @@ public class InMemoryFilmStorage implements FilmStorage {
         return (long) currentMaxId;
     }
 }
+
+ */
