@@ -10,6 +10,6 @@ import lombok.Setter;
 @AllArgsConstructor
 @Builder
 public class Genre {
-    private int genere_id;
+    private int id;
     private String name;
 }

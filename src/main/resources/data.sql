@@ -19,5 +19,5 @@ VALUES (1, 'Комедия'),
        (4, 'Триллер'),
        (5, 'Документальный'),
        (6, 'Боевик')
-    ) AS source(genre_id, name) ON target.genre_id = source.genre_id
-WHEN NOT MATCHED THEN INSERT (genre_id, name) VALUES (source.genre_id, source.name);
+    ) AS source(id, name) ON target.id = source.id
+WHEN NOT MATCHED THEN INSERT (id, name) VALUES (source.id, source.name);

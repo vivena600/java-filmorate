@@ -17,7 +17,7 @@ import ru.yandex.practicum.filmorate.mapper.RatingRowMapper;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Reting;
-import ru.yandex.practicum.filmorate.storage.DbGeneres;
+import ru.yandex.practicum.filmorate.storage.DbGenres;
 import ru.yandex.practicum.filmorate.storage.mpa.DbRetingStorage;
 
 
@@ -36,7 +36,7 @@ public class DbFilmStorage implements FilmStorage {
     private final FilmMapper mapper;
     private final RatingRowMapper mapperRating;
     private final DbRetingStorage dbMpa;
-    private final DbGeneres dbGenres;
+    private final DbGenres dbGenres;
 
     private static final LocalDate MINREASEDATA = LocalDate.of(1895, 12, 28);
 
@@ -64,7 +64,7 @@ public class DbFilmStorage implements FilmStorage {
             long id = keyHolder.getKey().longValue();
             newFilm.setId(id);
             newFilm.setMpa(mpa);
-            if (newFilm.getGenres() == null && newFilm.getGenres().isEmpty()) {
+            if (newFilm.getGenres() != null && !newFilm.getGenres().isEmpty()) {
                 setGenres(newFilm);
             }
             return mapper.mapToFilm(newFilm);
@@ -86,19 +86,17 @@ public class DbFilmStorage implements FilmStorage {
 
     @Override
     public Collection<Film> getFilms() {
-        //select from films join MPA + select genres + select from film_genres
-        // + Объединить
         log.info("Запрос на получение информации о всех фильмах");
         String query = "SELECT f.name,\n" +
                 "       f.description,\n" +
                 "       f.release_date,\n" +
-                "       f.DURATION,\n" +
+                "       f.duration,\n" +
                 "       m.name,\n" +
                 "       g.name\n" +
                 "FROM films AS f\n" +
                 "LEFT JOIN mpa AS m ON f.mpa_id = m.mpa_id\n" +
                 "LEFT JOIN films_genre AS fg ON f.id = fg.film_id\n" +
-                "LEFT JOIN genres AS g ON fg.genre_id = g.genre_id";
+                "LEFT JOIN genres AS g ON fg.genre_id = g.id";
         return jdbcTemplate.query(query, new FilmRowMapper());
     }
 
@@ -118,7 +116,7 @@ public class DbFilmStorage implements FilmStorage {
                 "FROM films AS f\n" +
                 "LEFT JOIN mpa AS m ON f.mpa_id = m.mpa_id\n" +
                 "LEFT JOIN films_genre AS fg ON f.id = fg.film_id\n" +
-                "LEFT JOIN genres AS g ON fg.genre_id = g.genre_id\n" +
+                "LEFT JOIN genres AS g ON fg.genre_id = g.id\n" +
                 "WHERE f.id = ?";
         List<Film> films = jdbcTemplate.query(query, new FilmRowMapper(), filmId);
         if (films.size() < 1) {
@@ -130,10 +128,12 @@ public class DbFilmStorage implements FilmStorage {
 
     private void setGenres(FilmDto film) {
         log.debug("Получение жанров фильма из запроса");
+        log.info("Жанры {}", film.getGenres());
 
         Set<Genre> genres = new HashSet<>();
         for (Genre genre : film.getGenres()) {
-            if ( genre.getGenere_id() != 0 && dbGenres.getGenreById(genre.getGenere_id()) != null) {
+            log.info("Проверка жанра c id {}", genre.getId());
+            if ( genre.getId() != 0 && dbGenres.getGenreById(genre.getId()) != null) {
                 genres.add(genre);
             }
         }
@@ -142,7 +142,7 @@ public class DbFilmStorage implements FilmStorage {
         log.info("Запрос на добавление жанров {} фильма с id {}", genres.toString(), filmId);
         String sql = "INSERT INTO films_genre (genre_id, film_id) VALUES (?, ?)";
         List<Object[]> params = genres.stream()
-                .map(genre -> new Object[] { genre.getGenere_id(), filmId })
+                .map(genre -> new Object[] { genre.getId(), filmId })
                 .collect(Collectors.toList());
 
         jdbcTemplate.batchUpdate(sql, params);

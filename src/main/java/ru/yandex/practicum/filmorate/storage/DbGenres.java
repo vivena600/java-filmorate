@@ -14,18 +14,18 @@ import java.util.List;
 @RequiredArgsConstructor
 @Slf4j
 @Component
-public class DbGeneres {
+public class DbGenres {
     private final JdbcTemplate jdbcTemplate;
 
     public Collection<Genre> getGenres() {
         log.info("Запрос на получение информации о жанрах");
-        String query = "SELECT * FROM genres;";
+        String query = "SELECT * FROM genres ORDER BY id;";
         return jdbcTemplate.query(query, new GenreRowMapper());
     }
 
     public Genre getGenreById(int id) {
         log.info("Запрос на получение информации о жанре с id {}", id);
-        String query = "SELECT * FROM genres WHERE genre_id = ?;";
+        String query = "SELECT * FROM genres WHERE id = ?;";
         List<Genre> genres = jdbcTemplate.query(query, new GenreRowMapper(), id);
         if (genres.isEmpty()) {
             log.debug("жанр с id {} не был найден", id);
@@ -35,7 +35,7 @@ public class DbGeneres {
     }
 
     public Collection<Genre> getFilmGenres(long filmId) {
-        String query = "SELECT * FROM genres WHERE genres_id IN (SELECT genre_id FROM films_genre WHERE = ?);";
+        String query = "SELECT * FROM genres WHERE id IN (SELECT genre_id FROM films_genre WHERE = ?);";
 
         return jdbcTemplate.query(query, new GenreRowMapper(), filmId);
     }
