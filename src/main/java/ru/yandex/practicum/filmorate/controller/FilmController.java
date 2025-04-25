@@ -25,21 +25,21 @@ public class FilmController {
         return filmService.getFilms();
     }
 
-    /*
-
     @GetMapping("{id}")
     public Film getFilmById(@PathVariable final Long id) {
         return filmService.getFilmById(id);
     }
 
+    @PutMapping
+    public Film putFilm(@Valid @RequestBody final FilmDto newFilm) {
+        return filmService.updateFilm(newFilm);
+    }
+
+    /*
+
     @GetMapping("/popular")
     public Collection<Film> getPopularFilm(@RequestParam(defaultValue = "10") @Positive int count) {
         return filmService.getPopularFilms(count);
-    }
-
-    @PutMapping
-    public Film putFilm(@Valid @RequestBody final Film newFilm) {
-        return filmService.updateFilm(newFilm);
     }
 
     @PutMapping("/{id}/like/{userId}")

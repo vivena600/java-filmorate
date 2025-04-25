@@ -60,10 +60,7 @@ public class DbUserStorage implements UserStorage {
     @Override
     public User updateUser(UserDto userUp) {
         log.info("Запрос на изменение данных о пользователе {}", userUp.toString());
-        if (!checkUserId(userUp.getId())) {
-            log.error("Не удалось найти пользователя по его id: {}", userUp.getId());
-            throw new NotFoundException("Пользователь с id: " + userUp.getId() + " не был найден");
-        }
+        checkUserId(userUp.getId());
         String query = "UPDATE users SET name = ?, login = ?, email = ?, birthday = ? WHERE id = ?";
         jdbcTemplate.update(query, userUp.getName(), userUp.getLogin(), userUp.getEmail(),
                 Date.valueOf(userUp.getBirthday()), userUp.getId());
@@ -119,8 +116,8 @@ public class DbUserStorage implements UserStorage {
         String query = "SELECT * FROM users WHERE id = ?";
         List<User> users = jdbcTemplate.query(query, new UserRowMapper(), userId);
         if (users.size() < 1) {
-            log.debug("Пользователь с id {} не был найден", userId);
-            return false;
+            log.error("Не удалось найти пользователя по его id: {}", userId);
+            throw new NotFoundException("Пользователь с id: " + userId + " не был найден");
         }
         return true;
     }

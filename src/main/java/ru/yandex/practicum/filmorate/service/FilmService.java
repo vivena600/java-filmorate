@@ -29,6 +29,16 @@ public class FilmService {
     public Collection<Film> getFilms() {
         return filmStorage.getFilms();
     }
+
+    public Film getFilmById(Long id) {
+        log.info("Запрос на получение информации о фильме с id {}", id);
+        return filmStorage.getFilmById(id);
+    }
+
+    public Film updateFilm(FilmDto filmUp) {
+        return filmStorage.update(filmUp);
+    }
+
     /*
 
 
@@ -41,15 +51,6 @@ public class FilmService {
         }
         log.trace("Введеное count больше количества фильмов, count изменен на {}", newCount);
         return sortFilmList.stream().toList().subList(0, newCount);
-    }
-
-    public Film getFilmById(Long id) {
-        log.info("Запрос на полученнние информации о фильме с id {}", id);
-        return containsFilm(id);
-    }
-
-    public Film updateFilm(Film filmUp) {
-        return filmStorage.update(filmUp);
     }
 
     public void addLike(Long filmId, Long userId) {

@@ -77,12 +77,29 @@ public class DbFilmStorage implements FilmStorage {
 
     @Override
     public void deleteFilm(FilmDto film) {
-
+        long id = film.getId();
+        log.info("Запрос на удаление фильма с id {}", id);
+        String sql = "DELETE FROM films WHERE id = ?";
+        jdbcTemplate.update(sql, id);
     }
 
     @Override
     public Film update(FilmDto filmUp) {
-        return null;
+        log.info("Запрос на обновление фильма: {}", filmUp.toString());
+        long id = filmUp.getId();
+        chekFilmId(id);
+
+        deleteFilm(filmUp);
+        Integer mpaId = filmUp.getMpa() != null ? filmUp.getMpa().getId() : null;
+
+        String sql = "UPDATE films SET name = ?, description = ?, release_date = ?, duration = ?, mpa_id = ?" +
+                " WHERE id = ?";
+        jdbcTemplate.update(sql, filmUp.getName(), filmUp.getDescription(), filmUp.getReleaseDate(),
+                filmUp.getDuration(), mpaId, id);
+        if (filmUp.getGenres() != null && !filmUp.getGenres().isEmpty()) {
+            setGenres(filmUp);
+        }
+        return mapper.mapToFilm(filmUp);
     }
 
     @Override
@@ -120,40 +137,33 @@ public class DbFilmStorage implements FilmStorage {
             log.error("В запросе не бы указан id пользователя");
             throw new ConditionNotMetException("В запросе на обновление не указан id");
         }
-        /*
 
-        String sql1 = "SELECT f.name,\n" +
+        String sql = "SELECT f.id,\n" +
+                "       f.name,\n" +
                 "       f.description,\n" +
                 "       f.release_date,\n" +
                 "       f.duration,\n" +
+                "       m.mpa_id,\n" +
                 "       m.name AS name_mpa\n" +
                 "FROM films AS f\n" +
                 "LEFT JOIN mpa AS m ON f.mpa_id = m.mpa_id\n" +
-                "LEFT JOIN films_genre AS fg ON f.id = fg.film_id\n" +
-                "LEFT JOIN genres AS g ON fg.genre_id = g.id\n" +
                 "WHERE f.id = ?";
 
-         */
+        List<Film> films = jdbcTemplate.query(sql, new FilmRowMapper(dbMpa), filmId);
 
-
-        String query = "SELECT f.name,\n" +
-                "       f.description,\n" +
-                "       f.release_date,\n" +
-                "       f.DURATION,\n" +
-                "       m.name,\n" +
-                "       g.name\n" +
-                "FROM films AS f\n" +
-                "LEFT JOIN mpa AS m ON f.mpa_id = m.mpa_id\n" +
-                "LEFT JOIN films_genre AS fg ON f.id = fg.film_id\n" +
-                "LEFT JOIN genres AS g ON fg.genre_id = g.id\n" +
-                "WHERE f.id = ?";
-        List<Film> films = jdbcTemplate.query(query, new FilmRowMapper(dbMpa), filmId);
         if (films.size() < 1) {
             log.error("Не удалось найти пользователя по его id: {}", filmId);
             throw new NotFoundException("Пользователь с id: " + filmId + " не был найден");
         }
 
-        return films.getFirst();
+        Film film = films.getFirst();
+
+        String genreSql = "SELECT g.id, g.name FROM films_genre AS fg LEFT JOIN films AS f ON f.id = fg.film_id " +
+                "LEFT JOIN genres AS g ON fg.genre_id = g.id WHERE f.id = ?";
+        List<Genre> genre = jdbcTemplate.query(genreSql, new GenreRowMapper(), filmId);
+        film.setGenres(new HashSet<>(genre));
+
+        return film;
     }
 
     private void setGenres(FilmDto film) {
@@ -195,5 +205,15 @@ public class DbFilmStorage implements FilmStorage {
             log.warn("Дата релиза {} раньше минимальной даты {}", newFilm, MINREASEDATA);
             throw new ConditionNotMetException("Дата релиза должна быть не раньше " + MINREASEDATA);
         }
+    }
+
+    private Boolean chekFilmId(final long filmId) {
+        String query = "SELECT * FROM films WHERE id = ?";
+        List<Film> film = jdbcTemplate.query(query, new FilmRowMapper(dbMpa), filmId);
+        if (film.size() < 1) {
+            log.error("Не удалось найти фильм по его id: {}", filmId);
+            throw new NotFoundException("Фильм с id: " + filmId + " не был найден");
+        }
+        return true;
     }
 }

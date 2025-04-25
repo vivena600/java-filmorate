@@ -6,7 +6,6 @@ import ru.yandex.practicum.filmorate.storage.mpa.DbRetingStorage;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.HashSet;
 
 public class FilmRowMapper implements RowMapper<Film> {
     private DbRetingStorage dbMpa;
