@@ -4,23 +4,20 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dto.FilmDto;
-import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.film.DbFilmStorage;
+import ru.yandex.practicum.filmorate.storage.LikeDao;
+import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.util.Collection;
-import java.util.Comparator;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j
 @RequiredArgsConstructor
 public class FilmService {
-    private final DbFilmStorage filmStorage;
+    private final FilmStorage filmStorage;
     private final UserStorage userStorage;
+    private final LikeDao likeDao;
 
     public Film addFilm(FilmDto newFilm) {
         return filmStorage.createFilm(newFilm);
@@ -31,12 +28,19 @@ public class FilmService {
     }
 
     public Film getFilmById(Long id) {
-        log.info("Запрос на получение информации о фильме с id {}", id);
         return filmStorage.getFilmById(id);
     }
 
     public Film updateFilm(FilmDto filmUp) {
         return filmStorage.update(filmUp);
+    }
+
+    public void addLike(Long filmId, Long userId) {
+        likeDao.addLike(filmId, userId);
+    }
+
+    public void removeLike(Long filmId, Long userId) {
+        likeDao.removeLike(filmId, userId);
     }
 
     /*
@@ -53,23 +57,6 @@ public class FilmService {
         return sortFilmList.stream().toList().subList(0, newCount);
     }
 
-    public void addLike(Long filmId, Long userId) {
-        log.info("Запрос пользователя с id: {} поставить лайк фильму с id {}", userId, filmId);
-        Film film = containsFilm(filmId);
-        User user = userStorage.getUserById(userId);
-        film.addLike(userId);
-        filmStorage.update(film);
-        log.debug("Пользователь {} успешно поставил лайк фильму с id {}", userId, filmId);
-    }
-
-    public void removeLike(Long filmId, Long userId) {
-        log.info("Запрос пользователя с id: {} удалить лайк фильму с id {}", userId, filmId);
-        Film film = containsFilm(filmId);
-        User user = userStorage.getUserById(userId);
-        film.removeLike(userId);
-        filmStorage.update(film);
-        log.debug("Пользователь {} успешно удалил лайк фильму с id {}", userId, filmId);
-    }
 
     private Film containsFilm(Long filmId) {
         log.trace("Проверка информации о фильме с id {}", filmId);

@@ -5,7 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.Reting;
-import ru.yandex.practicum.filmorate.storage.mpa.DbRetingStorage;
+import ru.yandex.practicum.filmorate.storage.MpaDao;
 
 import java.util.Collection;
 
@@ -13,7 +13,7 @@ import java.util.Collection;
 @RequiredArgsConstructor
 public class RetingService {
     private static final Logger log = LoggerFactory.getLogger(RetingService.class);
-    private final DbRetingStorage retingSt;
+    private final MpaDao retingSt;
 
     public Collection<Reting> getRatings() {
         return retingSt.getRatings();

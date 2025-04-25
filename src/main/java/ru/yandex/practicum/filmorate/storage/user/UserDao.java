@@ -24,7 +24,7 @@ import java.util.List;
 @Component
 @RequiredArgsConstructor
 @Transactional
-public class DbUserStorage implements UserStorage {
+public class UserDao implements UserStorage {
     private final JdbcTemplate jdbcTemplate;
     private final UserMapper userMapper;
 

@@ -6,14 +6,15 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dto.UserDto;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.user.DbUserStorage;
+import ru.yandex.practicum.filmorate.storage.user.UserDao;
+
 import java.util.Collection;
 
 @Service
 @RequiredArgsConstructor
 public class UserService {
     private static final Logger log = LoggerFactory.getLogger(UserService.class);
-    private final DbUserStorage userStorage;
+    private final UserDao userStorage;
 
     public User createUser(UserDto newUser) {
         return userStorage.createUser(newUser);

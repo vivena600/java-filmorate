@@ -15,4 +15,6 @@ public interface FilmStorage {
     Collection<Film> getFilms();
 
     Film getFilmById(Long filmId);
+
+    Boolean chekFilmId(final long filmId);
 }

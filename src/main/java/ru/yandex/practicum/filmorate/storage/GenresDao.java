@@ -14,7 +14,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @Slf4j
 @Component
-public class DbGenres {
+public class GenresDao {
     private final JdbcTemplate jdbcTemplate;
 
     public Collection<Genre> getGenres() {

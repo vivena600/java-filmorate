@@ -18,9 +18,8 @@ import ru.yandex.practicum.filmorate.mapper.RatingRowMapper;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Reting;
-import ru.yandex.practicum.filmorate.storage.DbGenres;
-import ru.yandex.practicum.filmorate.storage.mpa.DbRetingStorage;
-
+import ru.yandex.practicum.filmorate.storage.GenresDao;
+import ru.yandex.practicum.filmorate.storage.MpaDao;
 
 import java.sql.Date;
 import java.sql.PreparedStatement;
@@ -32,12 +31,12 @@ import java.util.stream.Collectors;
 @Component
 @RequiredArgsConstructor
 @Transactional
-public class DbFilmStorage implements FilmStorage {
+public class FilmDao implements FilmStorage {
     private final JdbcTemplate jdbcTemplate;
     private final FilmMapper mapper;
     private final RatingRowMapper mapperRating;
-    private final DbRetingStorage dbMpa;
-    private final DbGenres dbGenres;
+    private final MpaDao dbMpa;
+    private final GenresDao dbGenres;
 
     private static final LocalDate MINREASEDATA = LocalDate.of(1895, 12, 28);
 
@@ -207,7 +206,8 @@ public class DbFilmStorage implements FilmStorage {
         }
     }
 
-    private Boolean chekFilmId(final long filmId) {
+    @Override
+    public Boolean chekFilmId(final long filmId) {
         String query = "SELECT * FROM films WHERE id = ?";
         List<Film> film = jdbcTemplate.query(query, new FilmRowMapper(dbMpa), filmId);
         if (film.size() < 1) {

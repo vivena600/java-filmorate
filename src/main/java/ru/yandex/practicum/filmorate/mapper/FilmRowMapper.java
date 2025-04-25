@@ -2,15 +2,15 @@ package ru.yandex.practicum.filmorate.mapper;
 
 import org.springframework.jdbc.core.RowMapper;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.storage.mpa.DbRetingStorage;
+import ru.yandex.practicum.filmorate.storage.MpaDao;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public class FilmRowMapper implements RowMapper<Film> {
-    private DbRetingStorage dbMpa;
+    private MpaDao dbMpa;
 
-    public FilmRowMapper(DbRetingStorage dbMpa) {
+    public FilmRowMapper(MpaDao dbMpa) {
         this.dbMpa = dbMpa;
     }
 

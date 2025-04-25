@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.storage.mpa;
+package ru.yandex.practicum.filmorate.storage;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -14,7 +14,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @Slf4j
 @Component
-public class DbRetingStorage implements DbMpa{
+public class MpaDao {
     private final JdbcTemplate jdbcTemplate;
 
     public Collection<Reting> getRatings() {
