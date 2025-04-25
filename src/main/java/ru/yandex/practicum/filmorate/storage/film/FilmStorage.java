@@ -14,6 +14,8 @@ public interface FilmStorage {
 
     Collection<Film> getFilms();
 
+    Collection<Film> getPopularFilms(int limit);
+
     Film getFilmById(Long filmId);
 
     Boolean chekFilmId(final long filmId);

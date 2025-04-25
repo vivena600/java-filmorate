@@ -33,10 +33,4 @@ public class GenresDao {
         }
         return genres.getFirst();
     }
-
-    public Collection<Genre> getFilmGenres(long filmId) {
-        String query = "SELECT * FROM genres WHERE id IN (SELECT genre_id FROM films_genre WHERE = ?);";
-
-        return jdbcTemplate.query(query, new GenreRowMapper(), filmId);
-    }
 }

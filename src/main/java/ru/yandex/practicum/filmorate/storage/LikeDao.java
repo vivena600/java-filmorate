@@ -34,5 +34,4 @@ public class LikeDao {
         String sql = "DELETE FROM film_likes WHERE film_id = ? AND user_id = ?";
         jdbcTemplate.update(sql, filmId, userId);
     }
-
 }

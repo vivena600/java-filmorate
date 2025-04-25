@@ -39,6 +39,15 @@ public class FilmDao implements FilmStorage {
     private final GenresDao dbGenres;
 
     private static final LocalDate MINREASEDATA = LocalDate.of(1895, 12, 28);
+    private static final String SQL_GET_ALL_FILMS = "SELECT f.id,\n" +
+            "       f.name,\n" +
+            "       f.description,\n" +
+            "       f.release_date,\n" +
+            "       f.duration,\n" +
+            "       m.mpa_id,\n" +
+            "       m.name AS name_mpa\n" +
+            "FROM films AS f\n" +
+            "LEFT JOIN mpa AS m ON f.mpa_id = m.mpa_id\n";
 
     @Override
     public Film createFilm(FilmDto newFilm) {
@@ -104,18 +113,9 @@ public class FilmDao implements FilmStorage {
     @Override
     public Collection<Film> getFilms() {
         log.info("Запрос на получение информации о всех фильмах");
-        //заполнение основных полей фильма
-        String sql = "SELECT f.id,\n" +
-                "       f.name,\n" +
-                "       f.description,\n" +
-                "       f.release_date,\n" +
-                "       f.duration,\n" +
-                "       m.mpa_id,\n" +
-                "       m.name AS name_mpa\n" +
-                "FROM films AS f\n" +
-                "LEFT JOIN mpa AS m ON f.mpa_id = m.mpa_id";
 
-        List<Film> films = jdbcTemplate.query(sql, new FilmRowMapper(dbMpa));
+        //заполнение основных полей фильма
+        List<Film> films = jdbcTemplate.query(SQL_GET_ALL_FILMS, new FilmRowMapper(dbMpa));
         log.info("Получено фильмов {}", films.size());
 
         String genreSql = "SELECT g.id, g.name FROM films_genre AS fg LEFT JOIN films AS f ON f.id = fg.film_id " +
@@ -137,16 +137,7 @@ public class FilmDao implements FilmStorage {
             throw new ConditionNotMetException("В запросе на обновление не указан id");
         }
 
-        String sql = "SELECT f.id,\n" +
-                "       f.name,\n" +
-                "       f.description,\n" +
-                "       f.release_date,\n" +
-                "       f.duration,\n" +
-                "       m.mpa_id,\n" +
-                "       m.name AS name_mpa\n" +
-                "FROM films AS f\n" +
-                "LEFT JOIN mpa AS m ON f.mpa_id = m.mpa_id\n" +
-                "WHERE f.id = ?";
+        String sql = SQL_GET_ALL_FILMS + " WHERE id = ?";
 
         List<Film> films = jdbcTemplate.query(sql, new FilmRowMapper(dbMpa), filmId);
 
@@ -215,5 +206,15 @@ public class FilmDao implements FilmStorage {
             throw new NotFoundException("Фильм с id: " + filmId + " не был найден");
         }
         return true;
+    }
+
+    @Override
+    public Collection<Film> getPopularFilms(int limit) {
+        log.info("Запрос на получение {} популярных фильмов", limit);
+        String sql = SQL_GET_ALL_FILMS + "LEFT JOIN film_likes AS fl ON f.id = fl.film_id\n" +
+                "GROUP BY f.id, f.name, f.description, f.release_date, f.duration, m.mpa_id, m.name\n" +
+                "ORDER BY COUNT(fl.film_id) DESC\n" +
+                "LIMIT ?";
+        return jdbcTemplate.query(sql, new FilmRowMapper(dbMpa), limit);
     }
 }

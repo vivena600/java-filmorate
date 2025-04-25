@@ -15,7 +15,6 @@ import java.util.Set;
 public class Film {
     private static final int MAX_SIZE_DESCRIPTION = 200;
     private Long id;
-   // private Set<Long> likes;
     private Reting mpa;
     private Set<Genre> genres;
 
@@ -32,22 +31,4 @@ public class Film {
     @NotNull
     @Positive(message = "Продолжительность фильма должна быть положительным числом")
     private int duration;
-
-    /*
-
-    public void addLike(Long userId) {
-        if (likes == null) {
-            likes = new HashSet<>();
-        }
-        likes.add(userId);
-    }
-
-    public void removeLike(Long userId) {
-        if (likes == null) {
-            likes = new HashSet<>();
-        }
-        likes.add(userId);
-    }
-
-     */
 }
