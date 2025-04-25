@@ -13,6 +13,7 @@ import ru.yandex.practicum.filmorate.exception.ConditionNotMetException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.mapper.FilmMapper;
 import ru.yandex.practicum.filmorate.mapper.FilmRowMapper;
+import ru.yandex.practicum.filmorate.mapper.GenreRowMapper;
 import ru.yandex.practicum.filmorate.mapper.RatingRowMapper;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
@@ -87,17 +88,29 @@ public class DbFilmStorage implements FilmStorage {
     @Override
     public Collection<Film> getFilms() {
         log.info("Запрос на получение информации о всех фильмах");
-        String query = "SELECT f.name,\n" +
+        //заполнение основных полей фильма
+        String sql = "SELECT f.id,\n" +
+                "       f.name,\n" +
                 "       f.description,\n" +
                 "       f.release_date,\n" +
                 "       f.duration,\n" +
-                "       m.name,\n" +
-                "       g.name\n" +
+                "       m.mpa_id,\n" +
+                "       m.name AS name_mpa\n" +
                 "FROM films AS f\n" +
-                "LEFT JOIN mpa AS m ON f.mpa_id = m.mpa_id\n" +
-                "LEFT JOIN films_genre AS fg ON f.id = fg.film_id\n" +
-                "LEFT JOIN genres AS g ON fg.genre_id = g.id";
-        return jdbcTemplate.query(query, new FilmRowMapper());
+                "LEFT JOIN mpa AS m ON f.mpa_id = m.mpa_id";
+
+        List<Film> films = jdbcTemplate.query(sql, new FilmRowMapper(dbMpa));
+        log.info("Получено фильмов {}", films.size());
+
+        String genreSql = "SELECT g.id, g.name FROM films_genre AS fg LEFT JOIN films AS f ON f.id = fg.film_id " +
+                "LEFT JOIN genres AS g ON fg.genre_id = g.id WHERE f.id = ?";
+
+        for (Film film : films) {
+            long id = film.getId();
+            List<Genre> genre = jdbcTemplate.query(genreSql, new GenreRowMapper(), id);
+            film.setGenres(new HashSet<>(genre));
+        }
+        return films;
     }
 
     @Override
@@ -107,6 +120,22 @@ public class DbFilmStorage implements FilmStorage {
             log.error("В запросе не бы указан id пользователя");
             throw new ConditionNotMetException("В запросе на обновление не указан id");
         }
+        /*
+
+        String sql1 = "SELECT f.name,\n" +
+                "       f.description,\n" +
+                "       f.release_date,\n" +
+                "       f.duration,\n" +
+                "       m.name AS name_mpa\n" +
+                "FROM films AS f\n" +
+                "LEFT JOIN mpa AS m ON f.mpa_id = m.mpa_id\n" +
+                "LEFT JOIN films_genre AS fg ON f.id = fg.film_id\n" +
+                "LEFT JOIN genres AS g ON fg.genre_id = g.id\n" +
+                "WHERE f.id = ?";
+
+         */
+
+
         String query = "SELECT f.name,\n" +
                 "       f.description,\n" +
                 "       f.release_date,\n" +
@@ -118,11 +147,12 @@ public class DbFilmStorage implements FilmStorage {
                 "LEFT JOIN films_genre AS fg ON f.id = fg.film_id\n" +
                 "LEFT JOIN genres AS g ON fg.genre_id = g.id\n" +
                 "WHERE f.id = ?";
-        List<Film> films = jdbcTemplate.query(query, new FilmRowMapper(), filmId);
+        List<Film> films = jdbcTemplate.query(query, new FilmRowMapper(dbMpa), filmId);
         if (films.size() < 1) {
             log.error("Не удалось найти пользователя по его id: {}", filmId);
             throw new NotFoundException("Пользователь с id: " + filmId + " не был найден");
         }
+
         return films.getFirst();
     }
 
@@ -144,6 +174,7 @@ public class DbFilmStorage implements FilmStorage {
         List<Object[]> params = genres.stream()
                 .map(genre -> new Object[] { genre.getId(), filmId })
                 .collect(Collectors.toList());
+        log.info("параметры запроса {}", params.toString());
 
         jdbcTemplate.batchUpdate(sql, params);
 

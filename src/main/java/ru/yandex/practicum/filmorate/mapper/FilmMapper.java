@@ -18,6 +18,7 @@ public final class FilmMapper {
                 .releaseDate(filmDto.getReleaseDate())
                 .duration(filmDto.getDuration())
                 .mpa(filmDto.getMpa())
+                .genres(filmDto.getGenres())
                 .build();
     }
 

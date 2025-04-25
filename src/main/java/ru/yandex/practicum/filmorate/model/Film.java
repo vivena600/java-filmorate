@@ -6,7 +6,6 @@ import jakarta.validation.constraints.Size;
 import jakarta.validation.constraints.Positive;
 import lombok.Builder;
 import lombok.Data;
-import ru.yandex.practicum.filmorate.dto.RatingDto;
 
 import java.time.LocalDate;
 import java.util.Set;
