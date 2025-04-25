@@ -39,30 +39,25 @@ public class UserController {
         return userService.updateUser(userUp);
     }
 
-    /*
+    @DeleteMapping("{id}/friends/{friendId}")
+    public void deleteFriends(@PathVariable final Long id,
+                              @PathVariable final Long friendId) {
+        userService.removeFrend(id, friendId);
+    }
 
-    @GetMapping("/{id}/friends")
-    public Collection<User> getFriends(@PathVariable final Long id) {
+    @PutMapping("{id}/friends/{friendId}")
+    public void addFriends(@PathVariable final Long id,
+                           @PathVariable final Long friendId) {
+        userService.addFrend(id, friendId);
+    }
+
+    @GetMapping("{id}/friends")
+    public Collection<User> getFrends(@PathVariable final Long id) {
         return userService.getFriends(id);
     }
 
     @GetMapping("/{id}/friends/common/{otherId}")
     public Collection<User> getCommonFrends(@PathVariable final Long id, @PathVariable final Long otherId) {
-        return userService.retainFriends(id, otherId);
+        return userService.getCommonFrends(id, otherId);
     }
-
-
-    @PutMapping("{id}/friends/{friendId}")
-    public void addFriends(@PathVariable final Long id,
-            @PathVariable final Long friendId) {
-        userService.addFriend(id, friendId);
-    }
-
-    @DeleteMapping("{id}/friends/{friendId}")
-    public void deleteFriends(@PathVariable final Long id,
-                              @PathVariable final Long friendId) {
-        userService.deleteFriend(id, friendId);
-    }
-
-     */
 }

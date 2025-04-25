@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dto.UserDto;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.FrendDao;
 import ru.yandex.practicum.filmorate.storage.user.UserDao;
 
 import java.util.Collection;
@@ -15,6 +16,7 @@ import java.util.Collection;
 public class UserService {
     private static final Logger log = LoggerFactory.getLogger(UserService.class);
     private final UserDao userStorage;
+    private final FrendDao frendStorage;
 
     public User createUser(UserDto newUser) {
         return userStorage.createUser(newUser);
@@ -32,21 +34,24 @@ public class UserService {
         return userStorage.updateUser(userUp);
     }
 
-    /*
-    public Collection<User> getFriends(Long id) {
-        log.info("Получение списка друзей пользователя c id {}", id);
-        User user = containsUser(id);
-        Collection<User> frends = new HashSet<>();
-        if (user.getFriends() == null) {
-            log.trace("У пользователя нет друзей - программа вернет пустой список");
-            return frends;
-        }
-        frends = user.getFriends().stream()
-                .map(userStorage::getUserById)
-                .collect(Collectors.toList());
-        log.debug("Успешно найдены друзья пользователя: {}", frends);
-        return frends;
+    public void addFrend(Long userId, Long frendId) {
+        frendStorage.addFrends(userId, frendId);
     }
+
+    public void removeFrend(Long userId, Long frendId) {
+        frendStorage.removeFrends(userId, frendId);
+    }
+
+    public Collection<User> getFriends(Long id) {
+        return frendStorage.getFrends(id);
+    }
+
+    public Collection<User> getCommonFrends(Long userId, Long frendId) {
+        return frendStorage.getCommonFrends(userId, frendId);
+    }
+
+    /*
+
 
     public Collection<User> retainFriends(Long id, Long otherId) {
         log.info("поиск общих друзей у пользователей с id {} и {}", id, otherId);

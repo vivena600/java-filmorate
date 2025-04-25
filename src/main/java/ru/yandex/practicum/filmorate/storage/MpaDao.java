@@ -24,11 +24,11 @@ public class MpaDao {
     }
 
     public Reting getRatingById(int id) {
-        log.info("Запрос на получение информации о рейтинге с id {}", id);
+        log.debug("Запрос на получение информации о рейтинге с id {}", id);
         String query = "SELECT * FROM mpa WHERE mpa_id = ?;";
         List<Reting> ratings = jdbcTemplate.query(query, new RatingRowMapper(), id);
         if (ratings.isEmpty()) {
-            log.debug("рейтинг с id {} не был найден", id);
+            log.error("рейтинг с id {} не был найден", id);
             throw new NotFoundException("Рейтинг с id: " + id + " не был найден");
         }
         return ratings.getFirst();

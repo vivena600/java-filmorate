@@ -93,7 +93,7 @@ public class FilmDao implements FilmStorage {
 
     @Override
     public Film update(FilmDto filmUp) {
-        log.info("Запрос на обновление фильма: {}", filmUp.toString());
+        log.info("Запрос на обновление данных фильма: {}", filmUp.toString());
         long id = filmUp.getId();
         chekFilmId(id);
 
@@ -116,7 +116,7 @@ public class FilmDao implements FilmStorage {
 
         //заполнение основных полей фильма
         List<Film> films = jdbcTemplate.query(SQL_GET_ALL_FILMS, new FilmRowMapper(dbMpa));
-        log.info("Получено фильмов {}", films.size());
+        log.debug("Получено фильмов {}", films.size());
 
         String genreSql = "SELECT g.id, g.name FROM films_genre AS fg LEFT JOIN films AS f ON f.id = fg.film_id " +
                 "LEFT JOIN genres AS g ON fg.genre_id = g.id WHERE f.id = ?";
@@ -158,23 +158,23 @@ public class FilmDao implements FilmStorage {
 
     private void setGenres(FilmDto film) {
         log.debug("Получение жанров фильма из запроса");
-        log.info("Жанры {}", film.getGenres());
+        log.trace("Жанры {}", film.getGenres());
 
         Set<Genre> genres = new HashSet<>();
         for (Genre genre : film.getGenres()) {
-            log.info("Проверка жанра c id {}", genre.getId());
+            log.debug("Проверка жанра c id {}", genre.getId());
             if ( genre.getId() != 0 && dbGenres.getGenreById(genre.getId()) != null) {
                 genres.add(genre);
             }
         }
 
         long filmId = film.getId();
-        log.info("Запрос на добавление жанров {} фильма с id {}", genres.toString(), filmId);
+        log.trace("Запрос на добавление жанров {} фильма с id {}", genres.toString(), filmId);
         String sql = "INSERT INTO films_genre (genre_id, film_id) VALUES (?, ?)";
         List<Object[]> params = genres.stream()
                 .map(genre -> new Object[] { genre.getId(), filmId })
                 .collect(Collectors.toList());
-        log.info("параметры запроса {}", params.toString());
+        log.trace("параметры запроса {}", params.toString());
 
         jdbcTemplate.batchUpdate(sql, params);
 
