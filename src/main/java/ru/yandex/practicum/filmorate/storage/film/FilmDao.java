@@ -23,6 +23,7 @@ import ru.yandex.practicum.filmorate.storage.MpaDao;
 
 import java.sql.Date;
 import java.sql.PreparedStatement;
+import java.sql.Types;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -33,7 +34,7 @@ import java.util.stream.Collectors;
 @Transactional
 public class FilmDao implements FilmStorage {
     private final JdbcTemplate jdbcTemplate;
-    private final FilmMapper mapper;
+    //private final FilmMapper mapper;
     private final RatingRowMapper mapperRating;
     private final MpaDao dbMpa;
     private final GenresDao dbGenres;
@@ -55,7 +56,7 @@ public class FilmDao implements FilmStorage {
         validatorReleaseDate(newFilm);
         String query = "INSERT INTO films (name, description, release_date, duration, mpa_id) VALUES (?, ?, ?, ?, ?);";
         KeyHolder keyHolder = new GeneratedKeyHolder();
-        Reting mpa = getMpa(newFilm);
+        //Reting mpa = getMpa(newFilm);
 
         try {
             jdbcTemplate.update(con -> {
@@ -65,18 +66,26 @@ public class FilmDao implements FilmStorage {
                 ps.setString(2, newFilm.getDescription());
                 ps.setDate(3, Date.valueOf(newFilm.getReleaseDate()));
                 ps.setInt(4, newFilm.getDuration());
-                ps.setInt(5, mpa.getId());
+                // Обрабатываем случай, когда mpa = null
+                if (newFilm.getMpa() != null) {
+                    Reting mpa = getMpa(newFilm); // Получаем рейтинг из базы
+                    ps.setInt(5, mpa.getId());
+                } else {
+                    ps.setNull(5, Types.INTEGER); // Устанавливаем NULL в БД
+                }
 
                 return ps;
             }, keyHolder);
 
             long id = keyHolder.getKey().longValue();
             newFilm.setId(id);
-            newFilm.setMpa(mpa);
+            if (newFilm.getMpa() != null) {
+                newFilm.setMpa(getMpa(newFilm));
+            }
             if (newFilm.getGenres() != null && !newFilm.getGenres().isEmpty()) {
                 setGenres(newFilm);
             }
-            return mapper.mapToFilm(newFilm);
+            return FilmMapper.mapToFilm(newFilm);
         } catch (DataAccessException ex) {
             log.error("ошибка при создании фильма {}", ex.getMessage());
             throw new RuntimeException("Не удалось создать фильм");
@@ -107,7 +116,7 @@ public class FilmDao implements FilmStorage {
         if (filmUp.getGenres() != null && !filmUp.getGenres().isEmpty()) {
             setGenres(filmUp);
         }
-        return mapper.mapToFilm(filmUp);
+        return FilmMapper.mapToFilm(filmUp);
     }
 
     @Override
@@ -149,7 +158,7 @@ public class FilmDao implements FilmStorage {
         Film film = films.getFirst();
 
         String genreSql = "SELECT g.id, g.name FROM films_genre AS fg LEFT JOIN films AS f ON f.id = fg.film_id " +
-                "LEFT JOIN genres AS g ON fg.genre_id = g.id WHERE f.id = ?";
+                "LEFT JOIN genres AS g ON fg.genre_id = g.id WHERE f.id = ? ORDER BY g.id";
         List<Genre> genre = jdbcTemplate.query(genreSql, new GenreRowMapper(), filmId);
         film.setGenres(new HashSet<>(genre));
 
@@ -160,25 +169,27 @@ public class FilmDao implements FilmStorage {
         log.debug("Получение жанров фильма из запроса");
         log.trace("Жанры {}", film.getGenres());
 
-        Set<Genre> genres = new HashSet<>();
-        for (Genre genre : film.getGenres()) {
-            log.debug("Проверка жанра c id {}", genre.getId());
-            if ( genre.getId() != 0 && dbGenres.getGenreById(genre.getId()) != null) {
-                genres.add(genre);
-            }
-        }
+        Set<Genre> uniqueGenres = new HashSet<>(film.getGenres().stream()
+                .filter(genre -> genre.getId() != 0 && dbGenres.getGenreById(genre.getId()) != null)
+                .collect(Collectors.toMap(
+                        Genre::getId,
+                        genre -> genre,
+                        (existing, replacement) -> existing
+                ))
+                .values());
 
         long filmId = film.getId();
-        log.trace("Запрос на добавление жанров {} фильма с id {}", genres.toString(), filmId);
+        log.trace("Уникальные жанры для добавления: {}", uniqueGenres);
+
         String sql = "INSERT INTO films_genre (genre_id, film_id) VALUES (?, ?)";
-        List<Object[]> params = genres.stream()
+        List<Object[]> params = uniqueGenres.stream()
                 .map(genre -> new Object[] { genre.getId(), filmId })
                 .collect(Collectors.toList());
         log.trace("параметры запроса {}", params.toString());
 
         jdbcTemplate.batchUpdate(sql, params);
 
-        film.setGenres(genres);
+        film.setGenres(uniqueGenres);
     }
 
     private Reting getMpa(FilmDto film) {

@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 import ru.yandex.practicum.filmorate.model.Film;
 
 @Component
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
+@NoArgsConstructor
 public final class FilmMapper {
 
     public static Film mapToFilm(FilmDto filmDto) {
@@ -22,7 +22,7 @@ public final class FilmMapper {
                 .build();
     }
 
-    public static FilmDto mapToFilmDto(Film film) {
+    public FilmDto mapToFilmDto(Film film) {
         return FilmDto.builder()
                 .id(film.getId())
                 .name(film.getName())
