@@ -128,8 +128,7 @@ public class FilmDao implements FilmStorage {
 
         String genreSql = "SELECT g.id, g.name FROM films_genre fg " +
                 "JOIN genres g ON fg.genre_id = g.id " +
-                "WHERE fg.film_id = ? ORDER BY g.id";
-
+                "WHERE fg.film_id = ? ORDER BY fg.genre_id";
         for (Film film : films) {
             long id = film.getId();
             List<Genre> genre = jdbcTemplate.query(genreSql, new GenreRowMapper(), id);
@@ -159,7 +158,7 @@ public class FilmDao implements FilmStorage {
 
         String genreSql = "SELECT g.id, g.name FROM films_genre fg " +
                 "JOIN genres g ON fg.genre_id = g.id " +
-                "WHERE fg.film_id = ? ORDER BY g.id";
+                "WHERE fg.film_id = ? ORDER BY fg.genre_id";
         List<Genre> genre = jdbcTemplate.query(genreSql, new GenreRowMapper(), filmId);
         film.setGenres(new LinkedHashSet<>(genre));
 
