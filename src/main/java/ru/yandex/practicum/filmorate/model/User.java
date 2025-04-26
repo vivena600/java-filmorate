@@ -14,7 +14,6 @@ import java.time.LocalDate;
 @Data
 public class User {
     private Long id;
-    //private Set<Long> friends;
 
     @NotBlank
     @Email

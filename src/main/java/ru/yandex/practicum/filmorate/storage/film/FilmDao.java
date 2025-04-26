@@ -128,12 +128,12 @@ public class FilmDao implements FilmStorage {
         log.debug("Получено фильмов {}", films.size());
 
         String genreSql = "SELECT g.id, g.name FROM films_genre AS fg LEFT JOIN films AS f ON f.id = fg.film_id " +
-                "LEFT JOIN genres AS g ON fg.genre_id = g.id WHERE f.id = ?";
+                "LEFT JOIN genres AS g ON fg.genre_id = g.id WHERE f.id = ? ORDER BY g.id";
 
         for (Film film : films) {
             long id = film.getId();
             List<Genre> genre = jdbcTemplate.query(genreSql, new GenreRowMapper(), id);
-            film.setGenres(new HashSet<>(genre));
+            film.setGenres(new LinkedHashSet<>(genre));
         }
         return films;
     }
@@ -160,7 +160,7 @@ public class FilmDao implements FilmStorage {
         String genreSql = "SELECT g.id, g.name FROM films_genre AS fg LEFT JOIN films AS f ON f.id = fg.film_id " +
                 "LEFT JOIN genres AS g ON fg.genre_id = g.id WHERE f.id = ? ORDER BY g.id";
         List<Genre> genre = jdbcTemplate.query(genreSql, new GenreRowMapper(), filmId);
-        film.setGenres(new HashSet<>(genre));
+        film.setGenres(new LinkedHashSet<>(genre));
 
         return film;
     }
