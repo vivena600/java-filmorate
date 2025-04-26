@@ -93,7 +93,7 @@ public class FilmTest {
         Collection<Film> allFilms = filmDao.getFilms();
         filmDao.deleteFilm(film);
         Collection<Film> allFilmsBeforeDelete = filmDao.getFilms();
-        assertEquals(allFilmsBeforeDelete.size(), allFilms.size()-1, "Фильм не был удален");
+        assertEquals(allFilmsBeforeDelete.size(), allFilms.size() - 1, "Фильм не был удален");
         i--;
     }
 
