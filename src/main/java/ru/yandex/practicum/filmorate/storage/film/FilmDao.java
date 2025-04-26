@@ -7,19 +7,15 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.dto.FilmDto;
 import ru.yandex.practicum.filmorate.exception.ConditionNotMetException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.mapper.FilmMapper;
 import ru.yandex.practicum.filmorate.mapper.FilmRowMapper;
 import ru.yandex.practicum.filmorate.mapper.GenreRowMapper;
-import ru.yandex.practicum.filmorate.mapper.RatingRowMapper;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.model.Reting;
-import ru.yandex.practicum.filmorate.storage.GenresDao;
-import ru.yandex.practicum.filmorate.storage.MpaDao;
 
 import java.sql.Date;
 import java.sql.PreparedStatement;
@@ -29,15 +25,11 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
-@Component
+@Repository
 @RequiredArgsConstructor
 @Transactional
 public class FilmDao implements FilmStorage {
     private final JdbcTemplate jdbcTemplate;
-    //private final FilmMapper mapper;
-    private final RatingRowMapper mapperRating;
-    private final MpaDao dbMpa;
-    private final GenresDao dbGenres;
 
     private static final LocalDate MINREASEDATA = LocalDate.of(1895, 12, 28);
     private static final String SQL_GET_ALL_FILMS = "SELECT f.id,\n" +
@@ -46,7 +38,7 @@ public class FilmDao implements FilmStorage {
             "       f.release_date,\n" +
             "       f.duration,\n" +
             "       m.mpa_id,\n" +
-            "       m.name AS name_mpa\n" +
+            "       m.mpa_name\n" +
             "FROM films AS f\n" +
             "LEFT JOIN mpa AS m ON f.mpa_id = m.mpa_id\n";
 
@@ -65,12 +57,10 @@ public class FilmDao implements FilmStorage {
                 ps.setString(2, newFilm.getDescription());
                 ps.setDate(3, Date.valueOf(newFilm.getReleaseDate()));
                 ps.setInt(4, newFilm.getDuration());
-                // Обрабатываем случай, когда mpa = null
                 if (newFilm.getMpa() != null) {
-                    Reting mpa = getMpa(newFilm); // Получаем рейтинг из базы
-                    ps.setInt(5, mpa.getId());
+                    ps.setInt(5, newFilm.getMpa().getId());
                 } else {
-                    ps.setNull(5, Types.INTEGER); // Устанавливаем NULL в БД
+                    ps.setNull(5, Types.INTEGER);
                 }
 
                 return ps;
@@ -78,11 +68,8 @@ public class FilmDao implements FilmStorage {
 
             long id = keyHolder.getKey().longValue();
             newFilm.setId(id);
-            if (newFilm.getMpa() != null) {
-                newFilm.setMpa(getMpa(newFilm));
-            }
             if (newFilm.getGenres() != null && !newFilm.getGenres().isEmpty()) {
-                setGenres(newFilm);
+                updateGenre(newFilm);
             }
             return FilmMapper.mapToFilm(newFilm);
         } catch (DataAccessException ex) {
@@ -104,8 +91,6 @@ public class FilmDao implements FilmStorage {
         log.info("Запрос на обновление данных фильма: {}", filmUp.toString());
         long id = filmUp.getId();
         chekFilmId(id);
-
-        deleteFilm(filmUp);
         Integer mpaId = filmUp.getMpa() != null ? filmUp.getMpa().getId() : null;
 
         String sql = "UPDATE films SET name = ?, description = ?, release_date = ?, duration = ?, mpa_id = ?" +
@@ -113,7 +98,8 @@ public class FilmDao implements FilmStorage {
         jdbcTemplate.update(sql, filmUp.getName(), filmUp.getDescription(), filmUp.getReleaseDate(),
                 filmUp.getDuration(), mpaId, id);
         if (filmUp.getGenres() != null && !filmUp.getGenres().isEmpty()) {
-            setGenres(filmUp);
+            jdbcTemplate.update("DELETE FROM films_genre WHERE film_id = ?", id);
+            updateGenre(filmUp);
         }
         return FilmMapper.mapToFilm(filmUp);
     }
@@ -123,10 +109,10 @@ public class FilmDao implements FilmStorage {
         log.info("Запрос на получение информации о всех фильмах");
 
         //заполнение основных полей фильма
-        List<Film> films = jdbcTemplate.query(SQL_GET_ALL_FILMS, new FilmRowMapper(dbMpa));
+        List<Film> films = jdbcTemplate.query(SQL_GET_ALL_FILMS, new FilmRowMapper());
         log.debug("Получено фильмов {}", films.size());
 
-        String genreSql = "SELECT g.id, g.name FROM films_genre fg " +
+        String genreSql = "SELECT g.id, g.name FROM films_genre AS fg " +
                 "JOIN genres g ON fg.genre_id = g.id " +
                 "WHERE fg.film_id = ? ORDER BY g.id";
         for (Film film : films) {
@@ -146,8 +132,7 @@ public class FilmDao implements FilmStorage {
         }
 
         String sql = SQL_GET_ALL_FILMS + " WHERE id = ?";
-
-        List<Film> films = jdbcTemplate.query(sql, new FilmRowMapper(dbMpa), filmId);
+        List<Film> films = jdbcTemplate.query(sql, new FilmRowMapper(), filmId);
 
         if (films.size() < 1) {
             log.error("Не удалось найти пользователя по его id: {}", filmId);
@@ -156,7 +141,7 @@ public class FilmDao implements FilmStorage {
 
         Film film = films.getFirst();
 
-        String genreSql = "SELECT g.id, g.name FROM films_genre fg " +
+        String genreSql = "SELECT g.id, g.name FROM films_genre AS fg " +
                 "JOIN genres g ON fg.genre_id = g.id " +
                 "WHERE fg.film_id = ? ORDER BY g.id";
         List<Genre> genre = jdbcTemplate.query(genreSql, new GenreRowMapper(), filmId);
@@ -165,41 +150,31 @@ public class FilmDao implements FilmStorage {
         return film;
     }
 
-    private void setGenres(FilmDto film) {
-        log.debug("Получение жанров фильма из запроса");
-        log.trace("Жанры {}", film.getGenres());
-
-        Set<Genre> uniqueGenres = new HashSet<>(film.getGenres().stream()
-                .filter(genre -> genre.getId() != 0 && dbGenres.getGenreById(genre.getId()) != null)
-                .collect(Collectors.toMap(
-                        Genre::getId,
-                        genre -> genre,
-                        (existing, replacement) -> existing
-                ))
-                .values()).stream()
-                .sorted(Comparator.comparing(Genre::getId))
-                .collect(Collectors.toCollection(LinkedHashSet::new));
-
-        long filmId = film.getId();
-        log.trace("Уникальные жанры для добавления: {}", uniqueGenres);
-
-        String sql = "INSERT INTO films_genre (genre_id, film_id) VALUES (?, ?)";
-        List<Object[]> params = uniqueGenres.stream()
-                .map(genre -> new Object[] { genre.getId(), filmId })
-                .collect(Collectors.toList());
-        log.trace("параметры запроса {}", params.toString());
-
-        jdbcTemplate.batchUpdate(sql, params);
-
-        film.setGenres(uniqueGenres);
+    public Collection<Film> getPopularFilms(int limit) {
+        log.info("Запрос на получение {} популярных фильмов", limit);
+        String sql = SQL_GET_ALL_FILMS + "LEFT JOIN film_likes AS fl ON f.id = fl.film_id\n" +
+                "GROUP BY f.id, f.name, f.description, f.release_date, f.duration, m.mpa_id, m.mpa_name\n" +
+                "ORDER BY COUNT(fl.film_id) DESC\n" +
+                "LIMIT ?";
+        return jdbcTemplate.query(sql, new FilmRowMapper(), limit);
     }
 
-    private Reting getMpa(FilmDto film) {
-        if (film.getMpa() == null) {
-            return null;
+    private void updateGenre(FilmDto film) {
+        log.debug("Проверяем жанры в запросе");
+        try {
+            if (film.getGenres() == null) {
+                film.setGenres(new LinkedHashSet<>());
+            }
+            String sql = "INSERT INTO films_genre (genre_id, film_id) VALUES (?, ?)";
+            List<Object[]> params = film.getGenres().stream()
+                    .map(genre -> new Object[] { genre.getId(), film.getId()})
+                    .collect(Collectors.toList());
+            log.trace("Параметры запроса {}", params.toString());
+            jdbcTemplate.batchUpdate(sql, params);
+            film.setGenres(new LinkedHashSet<>(film.getGenres()));
+        } catch (Exception ex) {
+            throw new NotFoundException("Не найден жанр");
         }
-        log.trace("Полученный mpa {}", dbMpa.getRatingById(film.getMpa().getId()));
-        return dbMpa.getRatingById(film.getMpa().getId());
     }
 
     private void validatorReleaseDate(final FilmDto newFilm) {
@@ -212,22 +187,15 @@ public class FilmDao implements FilmStorage {
 
     @Override
     public Boolean chekFilmId(final long filmId) {
-        String query = "SELECT * FROM films WHERE id = ?";
-        List<Film> film = jdbcTemplate.query(query, new FilmRowMapper(dbMpa), filmId);
+        String query = "SELECT f.id, f.name, f.description, f.release_date, f.duration, " +
+                "m.mpa_id, m.mpa_name FROM films f " +
+                "LEFT JOIN mpa m ON f.mpa_id = m.mpa_id " +
+                "WHERE f.id = ?";
+        List<Film> film = jdbcTemplate.query(query, new FilmRowMapper(), filmId);
         if (film.size() < 1) {
             log.error("Не удалось найти фильм по его id: {}", filmId);
             throw new NotFoundException("Фильм с id: " + filmId + " не был найден");
         }
         return true;
-    }
-
-    @Override
-    public Collection<Film> getPopularFilms(int limit) {
-        log.info("Запрос на получение {} популярных фильмов", limit);
-        String sql = SQL_GET_ALL_FILMS + "LEFT JOIN film_likes AS fl ON f.id = fl.film_id\n" +
-                "GROUP BY f.id, f.name, f.description, f.release_date, f.duration, m.mpa_id, m.name\n" +
-                "ORDER BY COUNT(fl.film_id) DESC\n" +
-                "LIMIT ?";
-        return jdbcTemplate.query(sql, new FilmRowMapper(dbMpa), limit);
     }
 }

@@ -9,8 +9,8 @@ MERGE INTO mpa AS target USING (
            (3, 'PG-13'),
            (4, 'R'),
            (5, 'NC-17')
-    ) AS source(mpa_id, name) ON target.MPA_ID = source.mpa_id
-WHEN NOT MATCHED THEN INSERT (mpa_id, name) VALUES (source.mpa_id, source.name);
+    ) AS source(mpa_id, mpa_name) ON target.MPA_ID = source.mpa_id
+WHEN NOT MATCHED THEN INSERT (mpa_id, mpa_name) VALUES (source.mpa_id, source.mpa_name);
 
 MERGE INTO genres AS target USING (
 VALUES (1, 'Комедия'),

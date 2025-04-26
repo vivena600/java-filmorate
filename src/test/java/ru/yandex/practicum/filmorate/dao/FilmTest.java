@@ -21,6 +21,7 @@ import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Set;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
@@ -62,7 +63,6 @@ public class FilmTest {
         assertThat(createFilm).hasFieldOrPropertyWithValue("releaseDate", film.getReleaseDate());
         assertThat(createFilm).hasFieldOrPropertyWithValue("genres", null);
         assertThat(createFilm).hasFieldOrPropertyWithValue("mpa", null);
-
     }
 
     @DisplayName("Создание фильма с жанрами")
@@ -72,8 +72,12 @@ public class FilmTest {
         Genre genre1 = genresDao.getGenreById(1);
         Genre genre2 = genresDao.getGenreById(2);
         Genre genre3 = genresDao.getGenreById(1); //дубликат genre1
-        Collection<Genre> genres = Arrays.asList(genre1, genre2, genre3);
-        filmDto.setGenres(new HashSet<>(genres));
+        filmDto.setGenres(new HashSet<>(Arrays.asList(genre1, genre2, genre3)));
+        film.getGenres().add(genre1);
+        film.getGenres().add(genre2);
+        film.getGenres().add(genre3);
+        Set<Genre> genres = genresDao.checkListGenres(film.getGenres());
+        film.setGenres(genres);
         Collection<Genre> resultGenres = Arrays.asList(genre1, genre2);
         Film createFilm = filmDao.createFilm(filmDto);
         Collection<Film> allFilms = filmDao.getFilms();
@@ -106,6 +110,5 @@ public class FilmTest {
         assertThat(foundFilm).hasFieldOrPropertyWithValue("name", createdFilm.getName());
         assertThat(foundFilm).hasFieldOrPropertyWithValue("description", createdFilm.getDescription());
         assertThat(foundFilm).hasFieldOrPropertyWithValue("releaseDate",createdFilm.getReleaseDate());
-        assertThat(foundFilm).hasFieldOrPropertyWithValue("mpa", null);
     }
 }

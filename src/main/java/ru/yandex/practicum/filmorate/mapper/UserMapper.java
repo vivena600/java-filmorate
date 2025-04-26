@@ -2,12 +2,10 @@ package ru.yandex.practicum.filmorate.mapper;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.dto.UserDto;
 import ru.yandex.practicum.filmorate.model.User;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-@Component
 public class UserMapper {
 
     public static UserDto mapToUserDto(User user) {

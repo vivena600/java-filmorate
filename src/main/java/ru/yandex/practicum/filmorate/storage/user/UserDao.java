@@ -7,7 +7,7 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.dto.UserDto;
 import ru.yandex.practicum.filmorate.exception.ConditionNotMetException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
@@ -21,12 +21,11 @@ import java.util.Collection;
 import java.util.List;
 
 @Slf4j
-@Component
+@Repository
 @RequiredArgsConstructor
 @Transactional
 public class UserDao implements UserStorage {
     private final JdbcTemplate jdbcTemplate;
-    private final UserMapper userMapper;
 
     @Override
     public User createUser(UserDto newUser) {
@@ -49,7 +48,7 @@ public class UserDao implements UserStorage {
             long userId = generatedKeys.getKey().longValue();
             newUser.setId(userId);
 
-            return userMapper.mapToUser(newUser);
+            return UserMapper.mapToUser(newUser);
         } catch (DataAccessException ex) {
             log.error("ошибка при создании пользователя {}", ex.getMessage());
             throw new RuntimeException("Не удалось создать пользователя");
@@ -64,7 +63,7 @@ public class UserDao implements UserStorage {
         String query = "UPDATE users SET name = ?, login = ?, email = ?, birthday = ? WHERE id = ?";
         jdbcTemplate.update(query, userUp.getName(), userUp.getLogin(), userUp.getEmail(),
                 Date.valueOf(userUp.getBirthday()), userUp.getId());
-        return userMapper.mapToUser(userUp);
+        return UserMapper.mapToUser(userUp);
     }
 
     @Override

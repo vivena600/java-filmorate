@@ -14,7 +14,7 @@ public class RatingRowMapper implements RowMapper<Reting> {
     public Reting mapRow(ResultSet rs, int rowNum) throws SQLException {
         return Reting.builder()
                 .id(rs.getInt("mpa_id"))
-                .name(rs.getString("name"))
+                .name(rs.getString("mpa_name"))
                 .build();
     }
 }

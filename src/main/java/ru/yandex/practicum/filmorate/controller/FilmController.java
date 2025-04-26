@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.dto.FilmDto;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
+import ru.yandex.practicum.filmorate.service.LikeService;
 
 import java.util.*;
 
@@ -15,6 +16,7 @@ import java.util.*;
 @RequestMapping("/films")
 public class FilmController {
     private final FilmService filmService;
+    private final LikeService likeService;
 
     @PostMapping
     public Film postFilm(@Valid @RequestBody final FilmDto newFilm) {
@@ -38,12 +40,12 @@ public class FilmController {
 
     @PutMapping("/{id}/like/{userId}")
     public void addLikes(@PathVariable final Long id, @PathVariable final Long userId) {
-        filmService.addLike(id, userId);
+        likeService.addLike(id, userId);
     }
 
     @DeleteMapping("/{id}/like/{userId}")
     public void removeLikes(@PathVariable final Long id, @PathVariable final Long userId) {
-        filmService.removeLike(id, userId);
+        likeService.removeLike(id, userId);
     }
 
     @GetMapping("/popular")
