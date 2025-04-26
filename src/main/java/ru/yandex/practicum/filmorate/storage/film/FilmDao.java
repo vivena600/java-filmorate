@@ -56,7 +56,6 @@ public class FilmDao implements FilmStorage {
         validatorReleaseDate(newFilm);
         String query = "INSERT INTO films (name, description, release_date, duration, mpa_id) VALUES (?, ?, ?, ?, ?);";
         KeyHolder keyHolder = new GeneratedKeyHolder();
-        //Reting mpa = getMpa(newFilm);
 
         try {
             jdbcTemplate.update(con -> {
@@ -127,8 +126,9 @@ public class FilmDao implements FilmStorage {
         List<Film> films = jdbcTemplate.query(SQL_GET_ALL_FILMS, new FilmRowMapper(dbMpa));
         log.debug("Получено фильмов {}", films.size());
 
-        String genreSql = "SELECT g.id, g.name FROM films_genre AS fg LEFT JOIN films AS f ON f.id = fg.film_id " +
-                "LEFT JOIN genres AS g ON fg.genre_id = g.id WHERE f.id = ? ORDER BY g.id";
+        String genreSql = "SELECT g.id, g.name FROM films_genre fg " +
+                "JOIN genres g ON fg.genre_id = g.id " +
+                "WHERE fg.film_id = ? ORDER BY g.id";
 
         for (Film film : films) {
             long id = film.getId();
@@ -157,8 +157,9 @@ public class FilmDao implements FilmStorage {
 
         Film film = films.getFirst();
 
-        String genreSql = "SELECT g.id, g.name FROM films_genre AS fg LEFT JOIN films AS f ON f.id = fg.film_id " +
-                "LEFT JOIN genres AS g ON fg.genre_id = g.id WHERE f.id = ? ORDER BY g.id";
+        String genreSql = "SELECT g.id, g.name FROM films_genre fg " +
+                "JOIN genres g ON fg.genre_id = g.id " +
+                "WHERE fg.film_id = ? ORDER BY g.id";
         List<Genre> genre = jdbcTemplate.query(genreSql, new GenreRowMapper(), filmId);
         film.setGenres(new LinkedHashSet<>(genre));
 
